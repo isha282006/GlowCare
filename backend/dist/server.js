@@ -34,17 +34,17 @@ if (!fs_1.default.existsSync(uploadsDir)) {
     fs_1.default.mkdirSync(uploadsDir, { recursive: true });
 }
 // Middleware
+const allowedOrigins = [
+    "https://glow-care-xi.vercel.app",
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "http://localhost:5175",
+    "http://localhost:5176",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:5176",
+];
 app.use((0, cors_1.default)({
-    origin: [
-        process.env.FRONTEND_URL,
-        "https://glow-care-xi.vercel.app",
-        "http://localhost:5173",
-        "http://localhost:5174",
-        "http://localhost:5175",
-        "http://localhost:5176",
-        "http://127.0.0.1:5173",
-        "http://127.0.0.1:5176"
-    ].filter(Boolean),
+    origin: allowedOrigins,
     credentials: true,
 }));
 app.use(express_1.default.json({ limit: '10mb' }));
