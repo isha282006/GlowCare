@@ -1,79 +1,323 @@
-# GlowCare - Personal Skincare Management Platform
+# ✨ GlowCare – Personal Skincare Management Platform
 
-GlowCare is a comprehensive, production-ready full-stack web application designed to help users track skincare products, design and monitor morning/night routines, keep a skin journal, and view analytics of their skincare consistency.
+<p align="center">
+  <img src="https://img.shields.io/badge/React-Frontend-61DAFB?style=for-the-badge&logo=react" />
+  <img src="https://img.shields.io/badge/Node.js-Backend-339933?style=for-the-badge&logo=node.js" />
+  <img src="https://img.shields.io/badge/Express.js-API-000000?style=for-the-badge&logo=express" />
+  <img src="https://img.shields.io/badge/MongoDB-Database-47A248?style=for-the-badge&logo=mongodb" />
+  <img src="https://img.shields.io/badge/Status-Active-success?style=for-the-badge" />
+</p>
 
-## Technical Stack
+<p align="center">
+A modern full-stack skincare management platform that helps users organize products, build skincare routines, monitor skin progress, and maintain healthy skincare habits.
+</p>
+
+---
+
+# 🌸 Overview
+
+GlowCare is a full-stack skincare management platform designed to simplify daily skincare routines.
+
+Instead of forgetting products, using expired cosmetics, or following inconsistent routines, GlowCare enables users to manage everything from one beautiful dashboard.
+
+The platform provides a personalized skincare experience through questionnaires, routine planning, progress tracking, and product management.
+
+---
+
+# ✨ Features
+
+## 👤 User Authentication
+
+- Secure Login & Signup
+- JWT Authentication
+- Protected Routes
+- User Profile Management
+
+---
+
+## 🧴 Product Management
+
+- Add skincare products
+- Edit/Delete products
+- Product categories
+- Brand information
+- Purchase date
+- Expiry date
+- Product notes
+
+---
+
+## 🌞 Morning & Night Routine
+
+- Create personalized routines
+- Morning skincare routine
+- Night skincare routine
+- Mark completed routines
+- Routine progress tracking
+
+---
+
+## 🔍 Skin Assessment
+
+Users answer simple questions such as:
+
+- Skin Type
+- Acne
+- Pigmentation
+- Dryness
+- Oiliness
+- Sensitivity
+
+GlowCare recommends a suitable skincare routine based on the selected answers.
+
+---
+
+## 📈 Skin Progress Tracker
+
+Track your skincare journey with:
+
+- Before photos
+- After photos
+- Weekly updates
+- Monthly comparison
+- Progress history
+
+---
+
+## ⏰ Expiry Reminder
+
+Never use expired products again.
+
+GlowCare helps users monitor:
+
+- Product expiry dates
+- Expiring soon products
+- Expired products
+
+---
+
+## 📊 Dashboard
+
+A beautiful dashboard showing
+
+- Total Products
+- Today's Routine
+- Completed Routine
+- Progress Tracker
+- Expiring Products
+- Skin Health Overview
+
+---
+
+# 🚀 Tech Stack
 
 ### Frontend
-- **React.js & TypeScript**: Main structure and component model.
-- **Vite**: Rapid hot reloading compilation.
-- **Tailwind CSS v4**: Beautiful glassmorphic design and custom themes.
-- **React Router DOM**: Secure route management.
-- **Recharts**: Advanced data plotting of routines, water logs, and mood splits.
-- **Framer Motion**: Smooth entry, exit, and list reordering micro-animations.
-- **React Hook Form**: Form inputs validation.
+
+- React.js
+- HTML5
+- CSS3
+- JavaScript
+- Axios
 
 ### Backend
-- **Node.js & Express**: Rest API layer.
-- **MongoDB & Mongoose**: Database mapping and relationship schemas.
-- **JWT & bcryptjs**: Safe password hashing and session generation.
-- **Multer**: local file system file uploads.
+
+- Node.js
+- Express.js
+
+### Database
+
+- MongoDB
+- Mongoose
+
+### Authentication
+
+- JWT
+- bcrypt
+
+### Tools
+
+- Git
+- GitHub
+- Postman
+- VS Code
 
 ---
 
-## Getting Started
+# 📂 Project Structure
 
-### Prerequisites
-- Node.js installed locally.
-- MongoDB running locally at `mongodb://localhost:27017` or a MongoDB Atlas URI connection.
-
-### Installation
-
-1. Clone the repository and install dependencies for both services:
-
-```bash
-# Install backend dependencies
-cd backend
-npm install
-
-# Install frontend dependencies
-cd ../frontend
-npm install
 ```
-
-2. Seed the database with categories, ingredients, compatibility rules, and a default admin:
-```bash
-cd ../backend
-npm run seed
-```
-This generates:
-- **Default Admin Account**:
-  - Email: `admin@glowcare.com`
-  - Password: `admin123456`
-
-3. Run both servers:
-```bash
-# Start backend api
-cd backend
-npm run dev
-
-# Start frontend dev server
-cd ../frontend
-npm run dev
+GlowCare
+│
+├── client
+│   ├── src
+│   ├── components
+│   ├── pages
+│   ├── assets
+│   └── services
+│
+├── server
+│   ├── controllers
+│   ├── routes
+│   ├── models
+│   ├── middleware
+│   ├── config
+│   └── server.js
+│
+└── README.md
 ```
 
 ---
 
-## Application Collections
+# 🎯 Goals
 
-- **Users**: Authentication profile documents.
-- **Products**: User owned inventory records.
-- **Routines**: Morning and Night step list structures.
-- **RoutineHistory**: Tracking daily checklist status percentages.
-- **JournalEntries**: Mood, sleep, water, and skin worries.
-- **Photos**: Daily skin snaps.
-- **Wishlist**: Shopping logs to buy next.
-- **Achievements**: Gamified milestone badges.
-- **Categories**: Product organization tags.
-- **Ingredients**: Basic chemical compounds registry.
-- **CompatibilityRules**: Chemical interaction constraints.
+- Organize skincare products
+- Build healthy skincare habits
+- Track skincare progress
+- Avoid expired products
+- Improve consistency
+
+---
+
+# 📸 Screenshots
+
+Add screenshots here after deployment.
+
+```
+Home Page
+
+Dashboard
+
+Skin Assessment
+
+Routine Planner
+
+Product Inventory
+
+Progress Tracker
+```
+
+---
+
+# ⚙️ Installation
+
+## Clone Repository
+
+```bash
+git clone https://github.com/yourusername/glowcare.git
+```
+
+## Navigate
+
+```bash
+cd glowcare
+```
+
+## Install Frontend
+
+```bash
+cd client
+npm install
+```
+
+## Install Backend
+
+```bash
+cd ../server
+npm install
+```
+
+## Create Environment File
+
+```
+PORT=5000
+
+MONGO_URI=your_mongodb_connection
+
+JWT_SECRET=your_secret_key
+```
+
+## Start Backend
+
+```bash
+npm run dev
+```
+
+## Start Frontend
+
+```bash
+npm start
+```
+
+---
+
+# 💡 Future Improvements
+
+- Dark Mode
+- Product Wishlist
+- Barcode Scanner
+- Ingredient Checker
+- Dermatologist Notes
+- Mobile Responsive PWA
+- Calendar Integration
+- Multi-language Support
+
+---
+
+# 🤝 Contributing
+
+Contributions are welcome!
+
+1. Fork the repository
+2. Create your feature branch
+
+```
+git checkout -b feature-name
+```
+
+3. Commit changes
+
+```
+git commit -m "Added new feature"
+```
+
+4. Push
+
+```
+git push origin feature-name
+```
+
+5. Open a Pull Request
+
+---
+
+# 👩‍💻 Developer
+
+**Isha Vishnoi**
+
+Computer Science Engineering Student
+
+📧 ishavishnoi28@gmail.com
+
+🔗 LinkedIn:
+https://linkedin.com/in/isha-vishnoi-a66173350
+
+💻 GitHub:
+https://github.com/isha282006
+
+---
+
+# ⭐ Support
+
+If you like this project,
+
+⭐ Star the repository
+
+🍴 Fork it
+
+🛠️ Contribute
+
+---
+
+<p align="center">
+Made with ❤️ by <b>Isha Vishnoi</b>
+</p>
