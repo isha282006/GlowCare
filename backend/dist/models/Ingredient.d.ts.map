@@ -1,0 +1,1 @@
+{"version":3,"file":"Ingredient.d.ts","sourceRoot":"","sources":["../../src/models/Ingredient.ts"],"names":[],"mappings":"AAAA,OAAO,QAAQ,EAAE,EAAE,QAAQ,EAAU,MAAM,UAAU,CAAC;AAEtD,MAAM,WAAW,WAAY,SAAQ,QAAQ;IAC3C,IAAI,EAAE,MAAM,CAAC;IACb,WAAW,EAAE,MAAM,CAAC;IACpB,QAAQ,EAAE,MAAM,CAAC;IACjB,SAAS,EAAE,IAAI,CAAC;CACjB;;;;;;AAuBD,wBAA2E"}
