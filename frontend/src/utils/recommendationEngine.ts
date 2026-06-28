@@ -606,3 +606,179 @@ export const generateRoutineSteps = (
 
   return { morning, night };
 };
+
+export interface SmartAssessmentInput {
+  skinType: string;
+  concerns: string[];
+  lifestyle: {
+    waterIntake: string;
+    sleepDuration: string;
+    sunscreenUsage: string;
+    makeupUsage: string;
+    smoking: string;
+    stressLevel: string;
+  };
+}
+
+export const generateSmartAssessment = (input: SmartAssessmentInput) => {
+  const { skinType, concerns, lifestyle } = input;
+
+  // 1. Calculate Score
+  let score = 95 - (concerns.length * 4);
+  if (lifestyle.smoking === 'Yes') score -= 5;
+  if (lifestyle.stressLevel === 'High') score -= 5;
+  if (lifestyle.sleepDuration.includes('<') || lifestyle.sleepDuration.includes('5-7')) score -= 4;
+  score = Math.max(50, Math.min(100, score));
+
+  // 2. Hydration level
+  let hydration: 'High' | 'Medium' | 'Low' = 'Medium';
+  if (lifestyle.waterIntake.includes('2-3L') || lifestyle.waterIntake.includes('> 3L')) {
+    hydration = 'High';
+  } else if (lifestyle.waterIntake.includes('< 1L')) {
+    hydration = 'Low';
+  }
+
+  // 3. Oil Level
+  let oilLevel: 'High' | 'Moderate' | 'Low' = 'Moderate';
+  if (skinType.toLowerCase() === 'oily') {
+    oilLevel = 'High';
+  } else if (skinType.toLowerCase() === 'dry') {
+    oilLevel = 'Low';
+  }
+
+  // 4. Sensitivity
+  let sensitivity: 'High' | 'Medium' | 'Low' = 'Low';
+  if (skinType.toLowerCase() === 'sensitive') {
+    sensitivity = 'High';
+  } else if (skinType.toLowerCase() === 'combination') {
+    sensitivity = 'Medium';
+  }
+
+  // 5. Matched Ingredients & Products
+  const ingredients: string[] = [];
+  const tips: string[] = [];
+  const weeklyCare: string[] = [];
+
+  // Match ingredients based on concerns
+  if (concerns.includes('Acne') || concerns.includes('Blackheads') || concerns.includes('Whiteheads')) {
+    ingredients.push('Salicylic Acid', 'Niacinamide');
+    tips.push('Use a gentle chemical exfoliant with Salicylic Acid to target pores and acne.');
+  }
+  if (concerns.includes('Pigmentation') || concerns.includes('Dark Spots') || concerns.includes('Dullness')) {
+    ingredients.push('Vitamin C', 'Alpha Arbutin', 'Glycolic Acid');
+    tips.push('Incorporate Vitamin C in your morning routine to fade dark spots and boost skin glow.');
+  }
+  if (concerns.includes('Redness') || skinType.toLowerCase() === 'sensitive') {
+    ingredients.push('Ceramides', 'Centella Asiatica (Cica)', 'Panthenol');
+    tips.push('Prioritize barrier-repairing ingredients like Ceramides to soothe sensitivity.');
+  }
+  if (concerns.includes('Fine Lines') || concerns.includes('Wrinkles')) {
+    ingredients.push('Retinol', 'Peptides', 'Hyaluronic Acid');
+    tips.push('Use Retinol at night to stimulate collagen production and reduce fine lines.');
+  }
+  if (skinType.toLowerCase() === 'dry' || concerns.includes('Dullness')) {
+    ingredients.push('Hyaluronic Acid', 'Glycerin', 'Squalane');
+    tips.push('Apply products on slightly damp skin to lock in maximum hydration.');
+  }
+  if (ingredients.length === 0) {
+    ingredients.push('Niacinamide', 'Ceramides', 'Hyaluronic Acid');
+  }
+
+  // Helper to fetch from database
+  const getProduct = (nameQuery: string, brandQuery?: string): RecommendedProduct => {
+    const prod = productDatabase.find(p => 
+      p.name.toLowerCase().includes(nameQuery.toLowerCase()) && 
+      (!brandQuery || p.brand.toLowerCase() === brandQuery.toLowerCase())
+    );
+    return prod || productDatabase[0];
+  };
+
+  // Build routines
+  const morning: RecommendedProduct[] = [];
+  const night: RecommendedProduct[] = [];
+
+  // Cleanser
+  if (skinType.toLowerCase() === 'oily' || concerns.includes('Acne')) {
+    morning.push(getProduct("Salicylic Acid 2% LHA"));
+    night.push(getProduct("2% Salicylic Acid Face Wash", "The Derma Co."));
+  } else if (skinType.toLowerCase() === 'dry') {
+    morning.push(getProduct("Oat Cleanser"));
+    night.push(getProduct("Hydrating Facial Cleanser", "CeraVe"));
+  } else if (skinType.toLowerCase() === 'sensitive') {
+    morning.push(getProduct("Sensibio Gel Moussant", "Bioderma"));
+    night.push(getProduct("Gentle Skin Cleanser", "Cetaphil"));
+  } else {
+    morning.push(getProduct("Gentle Skin Cleanser", "Cetaphil"));
+    night.push(getProduct("Sensibio Gel Moussant", "Bioderma"));
+  }
+
+  // Serum
+  if (concerns.includes('Pigmentation') || concerns.includes('Dark Spots')) {
+    morning.push(getProduct("Vitamin C 16%"));
+    night.push(getProduct("Alpha Arbutin 2%"));
+  } else if (concerns.includes('Acne') || concerns.includes('Blackheads')) {
+    morning.push(getProduct("Niacinamide 10%"));
+    night.push(getProduct("Niacinamide 10%"));
+  } else if (skinType.toLowerCase() === 'dry') {
+    morning.push(getProduct("Hyaluronic Acid"));
+    night.push(getProduct("Hyaluronic Acid"));
+  } else {
+    morning.push(getProduct("Niacinamide 10%"));
+    morning.push(getProduct("Brightening Serum", "Deconstruct"));
+  }
+
+  // Moisturizer
+  if (skinType.toLowerCase() === 'dry') {
+    morning.push(getProduct("Barrier Repair Moisturizer", "Dot & Key"));
+    night.push(getProduct("Moisturizing Cream", "Cetaphil"));
+  } else if (skinType.toLowerCase() === 'oily') {
+    morning.push(getProduct("Green Tea Oil-Free", "Plum"));
+    night.push(getProduct("Oil-Free Cica Gel", "Dot & Key"));
+  } else {
+    morning.push(getProduct("Green Tea Oil-Free", "Plum"));
+    night.push(getProduct("PM Facial Moisturizing Lotion", "CeraVe"));
+  }
+
+  // Sunscreen (Morning)
+  if (skinType.toLowerCase() === 'dry') {
+    morning.push(getProduct("Lightweight Daily Sunscreen", "Conscious Chemist"));
+  } else {
+    morning.push(getProduct("Matte Sunscreen", "Foxtale"));
+  }
+
+  // Weekly care
+  if (skinType.toLowerCase() === 'oily' || concerns.includes('Acne')) {
+    weeklyCare.push("Clay Mask (1-2x a week): Regulates excess sebum, unclogs large pores, and dries out active blemishes.");
+  } else if (skinType.toLowerCase() === 'dry' || concerns.includes('Dullness')) {
+    weeklyCare.push("Hydrating Sheet Mask (1-2x a week): Drenches the skin in moisture and improves skin plumpness.");
+  } else {
+    weeklyCare.push("Gentle Exfoliator (1x a week): Fades dead skin cells and promotes even texture.");
+  }
+
+  const productPool = [...morning, ...night];
+  const uniqueProducts = Array.from(new Set(productPool.map(p => p.name))).map(name => productPool.find(p => p.name === name)!);
+
+  return {
+    assessment: {
+      skinType: skinType.charAt(0).toUpperCase() + skinType.slice(1),
+      primaryConcerns: concerns,
+      hydration,
+      oilLevel,
+      skinSensitivity: sensitivity,
+      skinScore: score,
+      confidence: "Questionnaire-based assessment.",
+      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    },
+    routine: {
+      morning: morning.map((p, i) => ({ ...p, order: i + 1, frequency: 'Daily', completed: false })),
+      night: night.map((p, i) => ({ ...p, order: i + 1, frequency: 'Daily', completed: false }))
+    },
+    recommendations: {
+      products: uniqueProducts,
+      ingredients,
+      tips,
+      weeklyCare
+    },
+    disclaimer: "This assessment is based on your questionnaire and uploaded photo. It is intended for skincare guidance only and is not a medical diagnosis. Consult a dermatologist for professional evaluation."
+  };
+};

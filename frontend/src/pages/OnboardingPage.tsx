@@ -5,7 +5,7 @@ import { ArrowRight, ArrowLeft, Check, Upload, RotateCcw, Camera, Sparkles } fro
 import { useToast } from '../contexts/ToastContext';
 import { useAuth } from '../contexts/AuthContext';
 import { authService, uploadService } from '../api/services';
-import { generateSkinRecommendations } from '../utils/recommendationEngine';
+import { generateSmartAssessment } from '../utils/recommendationEngine';
 
 interface OnboardingPageProps {
   step: 'welcome' | 'camera' | 'questionnaire';
@@ -19,37 +19,19 @@ const skinTypes = [
   { id: 'normal', title: 'Normal', icon: '🌿', desc: 'Balanced hydration, small pores.' }
 ];
 
-const severityLevels = [
-  { id: 'None', label: 'None', desc: 'No symptoms or issues' },
-  { id: 'Mild', label: 'Mild', desc: 'Slight or occasional symptoms' },
-  { id: 'Moderate', label: 'Moderate', desc: 'Noticeable symptoms regularly' },
-  { id: 'Severe', label: 'Severe', desc: 'Intense or constant symptoms' }
-];
-
-const sensitiveOptions = [
-  { id: 'Yes', label: 'Yes, easily irritated', icon: '🛡️' },
-  { id: 'No', label: 'No, fairly resilient', icon: '🌿' }
-];
-
 const concernsList = [
-  { id: 'acne', label: 'Acne & Breakouts', emoji: '🧼' },
-  { id: 'pigmentation', label: 'Pigmentation & Dark Spots', emoji: '✨' },
-  { id: 'tanning', label: 'Tanning & Sun Damage', emoji: '☀️' },
-  { id: 'dehydration', label: 'Dehydration & Dullness', emoji: '💧' },
-  { id: 'large_pores', label: 'Large Pores & Blackheads/Whiteheads', emoji: '🌓' },
-  { id: 'fine_lines', label: 'Fine Lines & Wrinkles', emoji: '👵' },
-  { id: 'redness', label: 'Redness & Uneven Skin Tone', emoji: '🍅' },
-  { id: 'lip_pigmentation', label: 'Lip Pigmentation', emoji: '👄' },
-  { id: 'dark_circles', label: 'Under-eye Dark Circles', emoji: '🐼' }
-];
-
-const goalsList = [
-  { id: 'glow', label: 'Achieve Healthy Glow', emoji: '🌟' },
-  { id: 'clear', label: 'Clear Up Breakouts', emoji: '🧼' },
-  { id: 'hydrate', label: 'Deeply Hydrate Skin', emoji: '💧' },
-  { id: 'balance', label: 'Balance Oil & Shine', emoji: '🌓' },
-  { id: 'soothe', label: 'Soothe & Calm Redness', emoji: '🛡️' },
-  { id: 'prevent', label: 'Prevent Premature Aging', emoji: '⏳' }
+  { id: 'Acne', label: 'Acne', emoji: '🧼' },
+  { id: 'Pigmentation', label: 'Pigmentation', emoji: '✨' },
+  { id: 'Dark Spots', label: 'Dark Spots', emoji: '☀️' },
+  { id: 'Dry Lips', label: 'Dry Lips', emoji: '👄' },
+  { id: 'Blackheads', label: 'Blackheads', emoji: '🌓' },
+  { id: 'Whiteheads', label: 'Whiteheads', emoji: '⚪' },
+  { id: 'Large Pores', label: 'Large Pores', emoji: '🔍' },
+  { id: 'Redness', label: 'Redness', emoji: '🍅' },
+  { id: 'Fine Lines', label: 'Fine Lines', emoji: '⏳' },
+  { id: 'Wrinkles', label: 'Wrinkles', emoji: '👵' },
+  { id: 'Dullness', label: 'Dullness', emoji: '💧' },
+  { id: 'Under-eye Dark Circles', label: 'Under-eye Dark Circles', emoji: '🐼' }
 ];
 
 const OnboardingPage: React.FC<OnboardingPageProps> = ({ step }) => {
@@ -62,30 +44,17 @@ const OnboardingPage: React.FC<OnboardingPageProps> = ({ step }) => {
   const [selectedSkinType, setSelectedSkinType] = useState<string | null>(
     localStorage.getItem('glowcare_user_skin_type') || null
   );
-  const [acneLevel, setAcneLevel] = useState<string>(
-    localStorage.getItem('glowcare_user_acne') || 'None'
+  const [selectedConcerns, setSelectedConcerns] = useState<string[]>(
+    JSON.parse(localStorage.getItem('glowcare_user_concerns') || '[]')
   );
-  const [pigmentationLevel, setPigmentationLevel] = useState<string>(
-    localStorage.getItem('glowcare_user_pigmentation') || 'None'
-  );
-  const [darkCircles, setDarkCircles] = useState<string>(
-    localStorage.getItem('glowcare_user_dark_circles') || 'None'
-  );
-  const [drynessLevel, setDrynessLevel] = useState<string>(
-    localStorage.getItem('glowcare_user_dryness') || 'None'
-  );
-  const [oilinessLevel, setOilinessLevel] = useState<string>(
-    localStorage.getItem('glowcare_user_oiliness') || 'None'
-  );
-  const [isSensitive, setIsSensitive] = useState<string>(
-    localStorage.getItem('glowcare_user_sensitive') || 'No'
-  );
-  const [mainConcern, setMainConcern] = useState<string>(
-    localStorage.getItem('glowcare_user_main_concern') || ''
-  );
-  const [mainGoal, setMainGoal] = useState<string>(
-    localStorage.getItem('glowcare_user_main_goal') || ''
-  );
+  const [lifestyle, setLifestyle] = useState({
+    waterIntake: localStorage.getItem('glowcare_user_water_intake') || '2-3L',
+    sleepDuration: localStorage.getItem('glowcare_user_sleep_duration') || '7-9 hours',
+    sunscreenUsage: localStorage.getItem('glowcare_user_sunscreen_usage') || 'Daily',
+    makeupUsage: localStorage.getItem('glowcare_user_makeup_usage') || 'Occasional',
+    smoking: localStorage.getItem('glowcare_user_smoking') || 'No',
+    stressLevel: localStorage.getItem('glowcare_user_stress_level') || 'Low'
+  });
 
   // Resume unfinished steps handler
   useEffect(() => {
@@ -179,6 +148,16 @@ const OnboardingPage: React.FC<OnboardingPageProps> = ({ step }) => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+      if (!validTypes.includes(file.type)) {
+        showToast('Please upload a valid image file (JPG, JPEG, PNG, or WEBP).', 'error');
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        showToast('Image size must be less than 5 MB.', 'error');
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = (event) => {
         const dataUrl = event.target?.result as string;
@@ -214,16 +193,12 @@ const OnboardingPage: React.FC<OnboardingPageProps> = ({ step }) => {
       showToast('Please select your skin type!', 'warning');
       return;
     }
-    if (subStep === 8 && !mainConcern) {
-      showToast('Please select your main skin concern!', 'warning');
-      return;
-    }
-    if (subStep === 9 && !mainGoal) {
-      showToast('Please select your main skin goal!', 'warning');
+    if (subStep === 2 && selectedConcerns.length === 0) {
+      showToast('Please select at least one skin concern!', 'warning');
       return;
     }
 
-    if (subStep === 9) {
+    if (subStep === 3) {
       handleFinish();
     } else {
       setDirection(1);
@@ -240,25 +215,10 @@ const OnboardingPage: React.FC<OnboardingPageProps> = ({ step }) => {
     }
   };
 
-  // Rule engine report generation
-  const generateSkinReport = () => {
-    return generateSkinRecommendations({
-      skinType: selectedSkinType || 'normal',
-      acne: acneLevel,
-      pigmentation: pigmentationLevel,
-      darkCircles,
-      dryness: drynessLevel,
-      oiliness: oilinessLevel,
-      isSensitive,
-      mainConcern,
-      mainGoal
-    });
-  };
-
   const handleFinish = async () => {
     setIsSaving(true);
     try {
-      const calculatedReport = generateSkinReport();
+      let selfieUrl = '';
 
       // 1. Upload baseline photo
       if (capturedImage && capturedImage.startsWith('data:')) {
@@ -270,13 +230,26 @@ const OnboardingPage: React.FC<OnboardingPageProps> = ({ step }) => {
           formData.append('category', 'before');
           formData.append('date', new Date().toISOString().split('T')[0]);
           formData.append('notes', 'Baseline Selfie (Onboarding)');
-          await uploadService.uploadProgressPhoto(formData);
+          const uploadRes = await uploadService.uploadProgressPhoto(formData);
+          if (uploadRes.data?.success) {
+            selfieUrl = uploadRes.data.imageUrl;
+          }
         } catch (imgErr) {
           console.error('Failed to upload baseline selfie:', imgErr);
         }
       }
 
-      // 2. Save report to User profile
+      // 2. Generate Assessment Report
+      const calculatedReport: any = generateSmartAssessment({
+        skinType: selectedSkinType || 'normal',
+        concerns: selectedConcerns,
+        lifestyle: lifestyle
+      });
+
+      // Save selfie image inside report data
+      calculatedReport.selfieImage = selfieUrl;
+
+      // 3. Save report to User profile
       const response = await authService.updateProfile({
         skinReport: calculatedReport,
         onboardingCompleted: true
@@ -285,7 +258,7 @@ const OnboardingPage: React.FC<OnboardingPageProps> = ({ step }) => {
       if (response.data.success) {
         updateUser(response.data.user);
         
-        // 3. Save states in localStorage
+        // 4. Save states in localStorage
         localStorage.setItem('glowcare_onboarding_completed', 'true');
         localStorage.removeItem('glowcare_onboarding_last_path');
         
@@ -497,19 +470,19 @@ const OnboardingPage: React.FC<OnboardingPageProps> = ({ step }) => {
           </motion.div>
         )}
 
-        {/* STEP 3: Skin Assessment Questionnaire (9-step slider) */}
+        {/* STEP 3: Skin Assessment Questionnaire (3-step slider) */}
         {step === 'questionnaire' && (
           <div className="w-full max-w-2xl space-y-6">
             
             {/* Progress indicator */}
             <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-gray-400 px-1">
-              <span>Question {subStep} of 9</span>
-              <span className="text-primary font-black">{Math.round((subStep / 9) * 100)}% Complete</span>
+              <span>Step {subStep} of 3</span>
+              <span className="text-primary font-black">{Math.round((subStep / 3) * 100)}% Complete</span>
             </div>
             <div className="h-2 w-full bg-pink-100/40 rounded-full overflow-hidden border border-white/50 shadow-inner">
               <div
                 className="h-full bg-gradient-to-r from-primary to-secondary transition-all duration-300"
-                style={{ width: `${(subStep / 9) * 100}%` }}
+                style={{ width: `${(subStep / 3) * 100}%` }}
               />
             </div>
 
@@ -561,7 +534,7 @@ const OnboardingPage: React.FC<OnboardingPageProps> = ({ step }) => {
                   </motion.div>
                 )}
 
-                {/* Q2: Acne Severity */}
+                {/* Q2: Skin Concerns (Multi-Select) */}
                 {subStep === 2 && (
                   <motion.div
                     key="q2"
@@ -570,272 +543,29 @@ const OnboardingPage: React.FC<OnboardingPageProps> = ({ step }) => {
                     initial="enter"
                     animate="center"
                     exit="exit"
-                    className="w-full space-y-6 max-w-lg mx-auto"
-                  >
-                    <div className="text-center space-y-2">
-                      <h2 className="text-2xl md:text-3xl font-black tracking-tight text-gray-800">Acne & Breakouts 🧼</h2>
-                      <p className="text-xs text-gray-500">How frequently do you notice blemishes or acne inflammation?</p>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-3">
-                      {severityLevels.map((lvl) => {
-                        const isSelected = acneLevel === lvl.id;
-                        return (
-                          <div
-                            key={lvl.id}
-                            onClick={() => {
-                              setAcneLevel(lvl.id);
-                              localStorage.setItem('glowcare_user_acne', lvl.id);
-                            }}
-                            className={`glass-card p-4 flex justify-between items-center cursor-pointer border transition-all ${
-                              isSelected ? 'border-primary bg-primary-light/30' : 'border-transparent'
-                            }`}
-                          >
-                            <div className="text-left">
-                              <h4 className="font-extrabold text-xs text-gray-700">{lvl.label}</h4>
-                              <p className="text-[10px] text-gray-400 mt-1 font-semibold">{lvl.desc}</p>
-                            </div>
-                            {isSelected && <Check className="text-primary text-lg flex-shrink-0" size={18} />}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* Q3: Pigmentation Severity */}
-                {subStep === 3 && (
-                  <motion.div
-                    key="q3"
-                    custom={direction}
-                    variants={slideVariants}
-                    initial="enter"
-                    animate="center"
-                    exit="exit"
-                    className="w-full space-y-6 max-w-lg mx-auto"
-                  >
-                    <div className="text-center space-y-2">
-                      <h2 className="text-2xl md:text-3xl font-black tracking-tight text-gray-800">Pigmentation & Sunspots ☀️</h2>
-                      <p className="text-xs text-gray-500">Do you notice dark marks, post-acne blemishes, or melasma?</p>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-3">
-                      {severityLevels.map((lvl) => {
-                        const isSelected = pigmentationLevel === lvl.id;
-                        return (
-                          <div
-                            key={lvl.id}
-                            onClick={() => {
-                              setPigmentationLevel(lvl.id);
-                              localStorage.setItem('glowcare_user_pigmentation', lvl.id);
-                            }}
-                            className={`glass-card p-4 flex justify-between items-center cursor-pointer border transition-all ${
-                              isSelected ? 'border-primary bg-primary-light/30' : 'border-transparent'
-                            }`}
-                          >
-                            <div className="text-left">
-                              <h4 className="font-extrabold text-xs text-gray-700">{lvl.label}</h4>
-                              <p className="text-[10px] text-gray-400 mt-1 font-semibold">{lvl.desc}</p>
-                            </div>
-                            {isSelected && <Check className="text-primary text-lg flex-shrink-0" size={18} />}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* Q4: Dark Circles */}
-                {subStep === 4 && (
-                  <motion.div
-                    key="q4"
-                    custom={direction}
-                    variants={slideVariants}
-                    initial="enter"
-                    animate="center"
-                    exit="exit"
-                    className="w-full space-y-6 max-w-lg mx-auto"
-                  >
-                    <div className="text-center space-y-2">
-                      <h2 className="text-2xl md:text-3xl font-black tracking-tight text-gray-800">Dark Circles & Puffiness 🐼</h2>
-                      <p className="text-xs text-gray-500">Do you experience shadows or swelling around the eye area?</p>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-3">
-                      {severityLevels.map((lvl) => {
-                        const isSelected = darkCircles === lvl.id;
-                        return (
-                          <div
-                            key={lvl.id}
-                            onClick={() => {
-                              setDarkCircles(lvl.id);
-                              localStorage.setItem('glowcare_user_dark_circles', lvl.id);
-                            }}
-                            className={`glass-card p-4 flex justify-between items-center cursor-pointer border transition-all ${
-                              isSelected ? 'border-primary bg-primary-light/30' : 'border-transparent'
-                            }`}
-                          >
-                            <div className="text-left">
-                              <h4 className="font-extrabold text-xs text-gray-700">{lvl.label}</h4>
-                              <p className="text-[10px] text-gray-400 mt-1 font-semibold">{lvl.desc}</p>
-                            </div>
-                            {isSelected && <Check className="text-primary text-lg flex-shrink-0" size={18} />}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* Q5: Dryness */}
-                {subStep === 5 && (
-                  <motion.div
-                    key="q5"
-                    custom={direction}
-                    variants={slideVariants}
-                    initial="enter"
-                    animate="center"
-                    exit="exit"
-                    className="w-full space-y-6 max-w-lg mx-auto"
-                  >
-                    <div className="text-center space-y-2">
-                      <h2 className="text-2xl md:text-3xl font-black tracking-tight text-gray-800">Skin Dryness & Tightness 💧</h2>
-                      <p className="text-xs text-gray-500">Does your skin feel dehydrated, tight, or show dry flakes?</p>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-3">
-                      {severityLevels.map((lvl) => {
-                        const isSelected = drynessLevel === lvl.id;
-                        return (
-                          <div
-                            key={lvl.id}
-                            onClick={() => {
-                              setDrynessLevel(lvl.id);
-                              localStorage.setItem('glowcare_user_dryness', lvl.id);
-                            }}
-                            className={`glass-card p-4 flex justify-between items-center cursor-pointer border transition-all ${
-                              isSelected ? 'border-primary bg-primary-light/30' : 'border-transparent'
-                            }`}
-                          >
-                            <div className="text-left">
-                              <h4 className="font-extrabold text-xs text-gray-700">{lvl.label}</h4>
-                              <p className="text-[10px] text-gray-400 mt-1 font-semibold">{lvl.desc}</p>
-                            </div>
-                            {isSelected && <Check className="text-primary text-lg flex-shrink-0" size={18} />}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* Q6: Oiliness */}
-                {subStep === 6 && (
-                  <motion.div
-                    key="q6"
-                    custom={direction}
-                    variants={slideVariants}
-                    initial="enter"
-                    animate="center"
-                    exit="exit"
-                    className="w-full space-y-6 max-w-lg mx-auto"
-                  >
-                    <div className="text-center space-y-2">
-                      <h2 className="text-2xl md:text-3xl font-black tracking-tight text-gray-800">Excessive Oil & Sebum 🍳</h2>
-                      <p className="text-xs text-gray-500">How would you describe your skin's grease or shine levels?</p>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-3">
-                      {severityLevels.map((lvl) => {
-                        const isSelected = oilinessLevel === lvl.id;
-                        return (
-                          <div
-                            key={lvl.id}
-                            onClick={() => {
-                              setOilinessLevel(lvl.id);
-                              localStorage.setItem('glowcare_user_oiliness', lvl.id);
-                            }}
-                            className={`glass-card p-4 flex justify-between items-center cursor-pointer border transition-all ${
-                              isSelected ? 'border-primary bg-primary-light/30' : 'border-transparent'
-                            }`}
-                          >
-                            <div className="text-left">
-                              <h4 className="font-extrabold text-xs text-gray-700">{lvl.label}</h4>
-                              <p className="text-[10px] text-gray-400 mt-1 font-semibold">{lvl.desc}</p>
-                            </div>
-                            {isSelected && <Check className="text-primary text-lg flex-shrink-0" size={18} />}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* Q7: Sensitive Skin */}
-                {subStep === 7 && (
-                  <motion.div
-                    key="q7"
-                    custom={direction}
-                    variants={slideVariants}
-                    initial="enter"
-                    animate="center"
-                    exit="exit"
-                    className="w-full space-y-6 max-w-lg mx-auto"
-                  >
-                    <div className="text-center space-y-2">
-                      <h2 className="text-2xl md:text-3xl font-black tracking-tight text-gray-800">Sensitive Skin Tendencies 🛡️</h2>
-                      <p className="text-xs text-gray-500">Does your face burn, itch, or turn red easily when applying skincare?</p>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      {sensitiveOptions.map((opt) => {
-                        const isSelected = isSensitive === opt.id;
-                        return (
-                          <div
-                            key={opt.id}
-                            onClick={() => {
-                              setIsSensitive(opt.id);
-                              localStorage.setItem('glowcare_user_sensitive', opt.id);
-                            }}
-                            className={`glass-card p-6 flex flex-col items-center justify-center cursor-pointer border h-36 gap-2 text-center transition-all ${
-                              isSelected ? 'border-primary bg-primary-light/30' : 'border-transparent'
-                            }`}
-                          >
-                            <span className="text-4xl">{opt.icon}</span>
-                            <span className="font-extrabold text-xs text-gray-700">{opt.label}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* Q8: Main Skin Concern */}
-                {subStep === 8 && (
-                  <motion.div
-                    key="q8"
-                    custom={direction}
-                    variants={slideVariants}
-                    initial="enter"
-                    animate="center"
-                    exit="exit"
                     className="w-full space-y-6"
                   >
                     <div className="text-center space-y-2">
-                      <h2 className="text-2xl md:text-3xl font-black tracking-tight text-gray-800">Main Skin Concern 🎯</h2>
-                      <p className="text-xs text-gray-500">What is the #1 issue you would like to target and solve?</p>
+                      <h2 className="text-2xl md:text-3xl font-black tracking-tight text-gray-800">Select Skin Concerns 🎯</h2>
+                      <p className="text-xs text-gray-500">Pick one or more areas you would like to target (selected items turn pink)</p>
                     </div>
 
-                    <div className="flex flex-wrap gap-3 justify-center max-w-xl mx-auto">
+                    <div className="flex flex-wrap gap-3.5 justify-center max-w-xl mx-auto">
                       {concernsList.map((con) => {
-                        const isSelected = mainConcern === con.id;
+                        const isSelected = selectedConcerns.includes(con.id);
                         return (
                           <button
                             key={con.id}
                             type="button"
                             onClick={() => {
-                              setMainConcern(con.id);
-                              localStorage.setItem('glowcare_user_main_concern', con.id);
+                              let updated = [];
+                              if (isSelected) {
+                                updated = selectedConcerns.filter(c => c !== con.id);
+                              } else {
+                                updated = [...selectedConcerns, con.id];
+                              }
+                              setSelectedConcerns(updated);
+                              localStorage.setItem('glowcare_user_concerns', JSON.stringify(updated));
                             }}
                             className={`px-5 py-3.5 rounded-full text-xs font-bold border transition-all flex items-center gap-2 cursor-pointer ${
                               isSelected
@@ -853,45 +583,125 @@ const OnboardingPage: React.FC<OnboardingPageProps> = ({ step }) => {
                   </motion.div>
                 )}
 
-                {/* Q9: Skin Goal */}
-                {subStep === 9 && (
+                {/* Q3: Lifestyle Profile */}
+                {subStep === 3 && (
                   <motion.div
-                    key="q9"
+                    key="q3"
                     custom={direction}
                     variants={slideVariants}
                     initial="enter"
                     animate="center"
                     exit="exit"
-                    className="w-full space-y-6"
+                    className="w-full space-y-6 max-w-xl mx-auto"
                   >
                     <div className="text-center space-y-2">
-                      <h2 className="text-2xl md:text-3xl font-black tracking-tight text-gray-800">What is your Ultimate Goal? 🌸</h2>
-                      <p className="text-xs text-gray-500">Define the core success state you want to achieve</p>
+                      <h2 className="text-2xl md:text-3xl font-black tracking-tight text-gray-800">Skincare & Lifestyle Habits 🌿</h2>
+                      <p className="text-xs text-gray-500">Your daily habits play a key role in formulation recommendations</p>
                     </div>
 
-                    <div className="flex flex-wrap gap-3 justify-center max-w-xl mx-auto">
-                      {goalsList.map((gl) => {
-                        const isSelected = mainGoal === gl.id;
-                        return (
-                          <button
-                            key={gl.id}
-                            type="button"
-                            onClick={() => {
-                              setMainGoal(gl.id);
-                              localStorage.setItem('glowcare_user_main_goal', gl.id);
-                            }}
-                            className={`px-5 py-3.5 rounded-full text-xs font-bold border transition-all flex items-center gap-2 cursor-pointer ${
-                              isSelected
-                                ? 'bg-primary border-primary text-white shadow-md'
-                                : 'bg-white/40 border-pink-100/70 text-gray-500 hover:border-pink-200'
-                            }`}
-                          >
-                            <span>{gl.emoji}</span>
-                            <span>{gl.label}</span>
-                            {isSelected && <Check className="text-white ml-1.5" size={13} />}
-                          </button>
-                        );
-                      })}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">💧 Water Intake (Daily)</label>
+                        <select
+                          value={lifestyle.waterIntake}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setLifestyle(prev => ({ ...prev, waterIntake: val }));
+                            localStorage.setItem('glowcare_user_water_intake', val);
+                          }}
+                          className="w-full bg-white/50 border border-pink-100/50 rounded-xl p-3 text-xs text-gray-700 outline-none focus:border-primary"
+                        >
+                          <option value="< 1L">&lt; 1 Liter (Dehydrated)</option>
+                          <option value="1-2L">1 - 2 Liters (Moderate)</option>
+                          <option value="2-3L">2 - 3 Liters (Optimal)</option>
+                          <option value="> 3L">&gt; 3 Liters (High)</option>
+                        </select>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">😴 Sleep Duration</label>
+                        <select
+                          value={lifestyle.sleepDuration}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setLifestyle(prev => ({ ...prev, sleepDuration: val }));
+                            localStorage.setItem('glowcare_user_sleep_duration', val);
+                          }}
+                          className="w-full bg-white/50 border border-pink-100/50 rounded-xl p-3 text-xs text-gray-700 outline-none focus:border-primary"
+                        >
+                          <option value="< 5 hours">&lt; 5 hours (Low)</option>
+                          <option value="5-7 hours">5 - 7 hours (Moderate)</option>
+                          <option value="7-9 hours">7 - 9 hours (Healthy)</option>
+                          <option value="> 9 hours">&gt; 9 hours (High)</option>
+                        </select>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">☀️ Sunscreen Usage</label>
+                        <select
+                          value={lifestyle.sunscreenUsage}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setLifestyle(prev => ({ ...prev, sunscreenUsage: val }));
+                            localStorage.setItem('glowcare_user_sunscreen_usage', val);
+                          }}
+                          className="w-full bg-white/50 border border-pink-100/50 rounded-xl p-3 text-xs text-gray-700 outline-none focus:border-primary"
+                        >
+                          <option value="Daily">Daily (Highly Protected)</option>
+                          <option value="Occasional">Occasional (Partially Protected)</option>
+                          <option value="Never">Never (Exposed)</option>
+                        </select>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">💄 Makeup Usage</label>
+                        <select
+                          value={lifestyle.makeupUsage}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setLifestyle(prev => ({ ...prev, makeupUsage: val }));
+                            localStorage.setItem('glowcare_user_makeup_usage', val);
+                          }}
+                          className="w-full bg-white/50 border border-pink-100/50 rounded-xl p-3 text-xs text-gray-700 outline-none focus:border-primary"
+                        >
+                          <option value="Daily">Daily</option>
+                          <option value="Occasional">Occasional</option>
+                          <option value="Never">Never</option>
+                        </select>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">🚬 Smoking Status</label>
+                        <select
+                          value={lifestyle.smoking}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setLifestyle(prev => ({ ...prev, smoking: val }));
+                            localStorage.setItem('glowcare_user_smoking', val);
+                          }}
+                          className="w-full bg-white/50 border border-pink-100/50 rounded-xl p-3 text-xs text-gray-700 outline-none focus:border-primary"
+                        >
+                          <option value="No">No (Non-smoker)</option>
+                          <option value="Yes">Yes (Smoker)</option>
+                        </select>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">🧠 Stress Levels</label>
+                        <select
+                          value={lifestyle.stressLevel}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setLifestyle(prev => ({ ...prev, stressLevel: val }));
+                            localStorage.setItem('glowcare_user_stress_level', val);
+                          }}
+                          className="w-full bg-white/50 border border-pink-100/50 rounded-xl p-3 text-xs text-gray-700 outline-none focus:border-primary"
+                        >
+                          <option value="Low">Low Stress</option>
+                          <option value="Medium">Medium Stress</option>
+                          <option value="High">High Stress</option>
+                        </select>
+                      </div>
                     </div>
                   </motion.div>
                 )}
@@ -913,7 +723,7 @@ const OnboardingPage: React.FC<OnboardingPageProps> = ({ step }) => {
                 disabled={isSaving}
                 className="btn-primary py-2.5 px-8 text-xs font-bold flex items-center gap-2 shadow-md"
               >
-                {isSaving ? 'Processing...' : subStep === 9 ? 'Complete & Analyze' : 'Next'} <ArrowRight size={14} />
+                {isSaving ? 'Processing...' : subStep === 3 ? 'Complete & Analyze' : 'Next'} <ArrowRight size={14} />
               </button>
             </div>
           </div>

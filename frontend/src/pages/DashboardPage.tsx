@@ -191,41 +191,58 @@ const DashboardPage: React.FC = () => {
     setRegenerating(true);
     try {
       const r = user.skinReport;
-      const dryVal = r.drynessLevel || 'None';
-      const oilVal = r.oilinessLevel || 'None';
-      const acneVal = r.acneLevel || 'None';
-      const pigVal = r.pigmentationLevel || 'None';
-      const dcVal = r.darkCircles || 'None';
-      const sensVal = r.isSensitive || 'No';
+      let morningSteps = [];
+      let nightSteps = [];
 
-      const { morning, night } = generateRoutineSteps(
-        r.skinType.toLowerCase(),
-        acneVal === 'None' ? 'No' : 'Yes',
-        pigVal === 'None' ? 'No' : 'Yes',
-        r.mainConcern === 'pigmentation' || r.mainConcern === 'dark_spots' ? 'Yes' : 'No',
-        r.mainConcern === 'lip_pigmentation' ? 'Yes' : 'No',
-        dcVal === 'None' ? 'No' : 'Yes',
-        r.mainConcern === 'fine_lines' ? 'Yes' : 'No',
-        dryVal,
-        oilVal,
-        sensVal
-      );
+      if (r.routine) {
+        morningSteps = r.routine.morning.map((step: any) => ({
+          order: step.order,
+          stepType: step.category || step.stepType,
+          productName: `${step.brand} ${step.name || step.productName}`,
+          completed: false
+        }));
 
-      // Save morning routine
-      const morningSteps = morning.map(step => ({
-        order: step.order,
-        stepType: step.category,
-        productName: `${step.brand} ${step.name}`,
-        completed: false
-      }));
+        nightSteps = r.routine.night.map((step: any) => ({
+          order: step.order,
+          stepType: step.category === 'Eye Care' ? 'Eye Cream' : step.category === 'Lip Care' ? 'Lip Balm' : (step.category || step.stepType),
+          productName: `${step.brand} ${step.name || step.productName}`,
+          completed: false
+        }));
+      } else {
+        const dryVal = r.drynessLevel || 'None';
+        const oilVal = r.oilinessLevel || 'None';
+        const acneVal = r.acneLevel || 'None';
+        const pigVal = r.pigmentationLevel || 'None';
+        const dcVal = r.darkCircles || 'None';
+        const sensVal = r.isSensitive || 'No';
 
-      // Save night routine
-      const nightSteps = night.map(step => ({
-        order: step.order,
-        stepType: step.category === 'Eye Care' ? 'Eye Cream' : step.category === 'Lip Care' ? 'Lip Balm' : step.category,
-        productName: `${step.brand} ${step.name}`,
-        completed: false
-      }));
+        const { morning, night } = generateRoutineSteps(
+          r.skinType.toLowerCase(),
+          acneVal === 'None' ? 'No' : 'Yes',
+          pigVal === 'None' ? 'No' : 'Yes',
+          r.mainConcern === 'pigmentation' || r.mainConcern === 'dark_spots' ? 'Yes' : 'No',
+          r.mainConcern === 'lip_pigmentation' ? 'Yes' : 'No',
+          dcVal === 'None' ? 'No' : 'Yes',
+          r.mainConcern === 'fine_lines' ? 'Yes' : 'No',
+          dryVal,
+          oilVal,
+          sensVal
+        );
+
+        morningSteps = morning.map(step => ({
+          order: step.order,
+          stepType: step.category,
+          productName: `${step.brand} ${step.name}`,
+          completed: false
+        }));
+
+        nightSteps = night.map(step => ({
+          order: step.order,
+          stepType: step.category === 'Eye Care' ? 'Eye Cream' : step.category === 'Lip Care' ? 'Lip Balm' : step.category,
+          productName: `${step.brand} ${step.name}`,
+          completed: false
+        }));
+      }
 
       await Promise.all([
         routineService.create({ type: 'morning', steps: morningSteps }),
@@ -488,10 +505,10 @@ const DashboardPage: React.FC = () => {
           <div className="absolute top-[-10%] right-[-10%] w-12 h-12 rounded-full bg-pink-100/30 blur-md pointer-events-none" />
           <div className="flex items-center gap-3 mb-2.5">
             <div className="w-9 h-9 rounded-xl bg-pink-100/60 flex items-center justify-center text-primary"><Award size={16} /></div>
-            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Skin Score</p>
+            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Skin Health</p>
           </div>
-          <p className="text-2xl font-black text-gray-800">{user?.skinReport?.skinScore || 'N/A'}<span className="text-xs font-semibold text-gray-400">/100</span></p>
-          <p className="text-[10px] text-green-500 font-bold mt-1">↑ +5 this week</p>
+          <p className="text-2xl font-black text-gray-800">{user?.skinReport?.assessment?.skinScore || user?.skinReport?.skinScore || 'N/A'}<span className="text-xs font-semibold text-gray-400">/100</span></p>
+          <p className="text-[9px] text-primary font-black uppercase mt-1">Type: {user?.skinReport?.assessment?.skinType || user?.skinReport?.skinType || 'N/A'}</p>
         </motion.div>
 
         <motion.div whileHover={{ y: -4 }} className="glass-card p-5 border border-white/40 shadow-sm relative overflow-hidden">
@@ -730,6 +747,94 @@ const DashboardPage: React.FC = () => {
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* 3.6 SMART ASSESSMENT SKIN SUMMARY */}
+      {user?.skinReport && (
+        <div className="glass-card p-7 border border-white/40 shadow-sm text-left grid grid-cols-1 md:grid-cols-3 gap-6">
+          
+          {/* Latest Selfie */}
+          <div className="md:col-span-1 space-y-3.5">
+            <h3 className="font-bold text-sm flex items-center gap-2 text-gray-800">
+              📸 Latest Selfie
+            </h3>
+            {user.skinReport.selfieImage ? (
+              <img 
+                src={user.skinReport.selfieImage.startsWith('http') ? user.skinReport.selfieImage : `http://localhost:5000${user.skinReport.selfieImage}`} 
+                alt="Baseline Skin Selfie" 
+                className="w-full aspect-[4/3] object-cover rounded-2xl border border-pink-100/50 shadow-sm"
+              />
+            ) : (
+              <div className="w-full aspect-[4/3] rounded-2xl bg-pink-50/30 border border-dashed border-pink-200/50 flex flex-col items-center justify-center text-gray-400 gap-1.5">
+                <Camera size={24} />
+                <span className="text-[10px] font-bold uppercase">No baseline selfie</span>
+              </div>
+            )}
+          </div>
+
+          {/* Skin Profile Summary */}
+          <div className="md:col-span-1 space-y-4">
+            <h3 className="font-bold text-sm flex items-center gap-2 text-gray-800">
+              🌿 Skin Profile
+            </h3>
+            <div className="space-y-3.5 text-xs">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-400 font-bold uppercase tracking-wider text-[9px]">Skin Type:</span>
+                <span className="badge badge-lavender text-[9px] font-black uppercase">
+                  {user.skinReport.assessment?.skinType || user.skinReport.skinType || 'N/A'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-400 font-bold uppercase tracking-wider text-[9px]">Hydration:</span>
+                <span className={`badge text-[9px] font-black uppercase ${
+                  user.skinReport.assessment?.hydration === 'High' ? 'badge-safe' : 'badge-warning'
+                }`}>
+                  {user.skinReport.assessment?.hydration || 'Medium'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-400 font-bold uppercase tracking-wider text-[9px]">Oil Level:</span>
+                <span className="badge badge-safe text-[9px] font-black uppercase">
+                  {user.skinReport.assessment?.oilLevel || 'Moderate'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-400 font-bold uppercase tracking-wider text-[9px]">Sensitivity:</span>
+                <span className="badge badge-lavender text-[9px] font-black uppercase">
+                  {user.skinReport.assessment?.skinSensitivity || 'Low'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Skin Concerns & Disclaimer */}
+          <div className="md:col-span-1 space-y-4 flex flex-col justify-between">
+            <div className="space-y-3">
+              <h3 className="font-bold text-sm flex items-center gap-2 text-gray-800">
+                🎯 Target Concerns
+              </h3>
+              <div className="flex flex-wrap gap-1.5">
+                {(user.skinReport.assessment?.primaryConcerns || user.skinReport.assessment?.skinConcerns || []).length > 0 ? (
+                  (user.skinReport.assessment?.primaryConcerns || user.skinReport.assessment?.skinConcerns || []).map((c: string, idx: number) => (
+                    <span key={idx} className="badge badge-lavender text-[9px] font-bold">
+                      {c}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-[10px] text-gray-400 italic">No concerns selected</span>
+                )}
+              </div>
+            </div>
+
+            <div className="p-3 bg-red-50/10 border border-primary/20 rounded-2xl">
+              <p className="text-[9px] text-gray-500 leading-normal font-semibold">
+                <span className="font-black text-primary uppercase tracking-wider block mb-0.5">Skincare Disclaimer</span>
+                This assessment is based on your questionnaire and photo, intended for guidance only. Consult a dermatologist.
+              </p>
+            </div>
+          </div>
+
         </div>
       )}
 
