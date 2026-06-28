@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Plus, Trash2, Camera, LayoutGrid, Maximize2, Download, Upload, Calendar } from 'lucide-react';
 import { photoService, uploadService } from '../api/services';
 import { useToast } from '../contexts/ToastContext';
+import { BACKEND_URL } from '../api/axios';
 import { LoadingSkeleton, Modal, EmptyState } from '../components/ui';
 import type { Photo } from '../types';
 
@@ -231,7 +232,7 @@ const GalleryPage: React.FC = () => {
                 <div className="relative aspect-[4/3] w-full rounded-3xl overflow-hidden select-none border border-pink-100 shadow-inner">
                   {/* After Layer (Base) */}
                   <img
-                    src={`http://localhost:5000${afterPhoto.image}`}
+                    src={`${BACKEND_URL}${afterPhoto.image}`}
                     alt="After state"
                     className="absolute inset-0 w-full h-full object-cover"
                   />
@@ -245,7 +246,7 @@ const GalleryPage: React.FC = () => {
                     style={{ clipPath: `polygon(0 0, ${sliderPosition}% 0, ${sliderPosition}% 100%, 0 100%)` }}
                   >
                     <img
-                      src={`http://localhost:5000${beforePhoto.image}`}
+                      src={`${BACKEND_URL}${beforePhoto.image}`}
                       alt="Before state"
                       className="absolute inset-0 w-full h-full object-cover"
                     />
@@ -340,7 +341,7 @@ const GalleryPage: React.FC = () => {
                           className="flex gap-3.5 p-3 rounded-2xl border items-center bg-white/50 border-pink-100/30 hover:border-pink-200/50 transition-all shadow-sm"
                         >
                           <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 relative group border border-pink-100/10">
-                            <img src={`http://localhost:5000${photo.image}`} alt="Skin log" className="w-full h-full object-cover" />
+                            <img src={`${BACKEND_URL}${photo.image}`} alt="Skin log" className="w-full h-full object-cover" />
                             <button
                               onClick={() => { setZoomPhoto(photo); setIsZoomOpen(true); }}
                               className="absolute inset-0 bg-pink-900/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity border-none cursor-pointer text-white"
@@ -365,7 +366,7 @@ const GalleryPage: React.FC = () => {
 
                           <div className="flex flex-col gap-1.5 flex-shrink-0">
                             <button
-                              onClick={() => handleDownload(`http://localhost:5000${photo.image}`, `skin_${photo.date}.jpg`)}
+                              onClick={() => handleDownload(`${BACKEND_URL}${photo.image}`, `skin_${photo.date}.jpg`)}
                               className="p-1 rounded-lg hover:bg-pink-50 text-gray-450 border-none cursor-pointer bg-transparent"
                             >
                               <Download size={13} />
@@ -503,7 +504,7 @@ const GalleryPage: React.FC = () => {
           <div className="space-y-4 text-left">
             <div className="flex justify-center bg-pink-50/10 rounded-2xl overflow-hidden p-2 border border-pink-100/10 shadow-inner">
               <img
-                src={`http://localhost:5000${zoomPhoto.image}`}
+                src={`${BACKEND_URL}${zoomPhoto.image}`}
                 alt="Skin Zoom"
                 className="max-w-full max-h-[60vh] rounded-xl object-contain shadow-md"
               />
@@ -531,7 +532,7 @@ const GalleryPage: React.FC = () => {
             
             <div className="flex gap-2 border-t pt-3.5 justify-end border-pink-100/50">
               <button
-                onClick={() => handleDownload(`http://localhost:5000${zoomPhoto.image}`, `skin_${zoomPhoto.date}.jpg`)}
+                onClick={() => handleDownload(`${BACKEND_URL}${zoomPhoto.image}`, `skin_${zoomPhoto.date}.jpg`)}
                 className="btn-primary text-xs font-black py-2.5 px-5 flex items-center gap-2 shadow-sm cursor-pointer"
               >
                 <Download size={14} /> Download File

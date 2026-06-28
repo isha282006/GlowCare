@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Trash2, Layers, List, AlertOctagon } from 'lucide-react';
 import { adminService } from '../../api/services';
 import { useToast } from '../../contexts/ToastContext';
+import { BACKEND_URL } from '../../api/axios';
 import { LoadingSkeleton, StatCard } from '../../components/ui';
 import type { PlatformStats, User } from '../../types';
 
@@ -127,7 +128,7 @@ const AdminDashboardPage: React.FC = () => {
                 <tr key={u.id} className="border-b border-pink-50/20 hover:bg-pink-50/10 transition-colors">
                   <td className="py-3.5 font-bold flex items-center gap-2.5 text-gray-700">
                     {u.profilePicture ? (
-                      <img src={`http://localhost:5000${u.profilePicture}`} alt="u" className="w-6.5 h-6.5 rounded-full object-cover border border-pink-100/50" />
+                      <img src={u.profilePicture.startsWith('http') ? u.profilePicture : `${BACKEND_URL}${u.profilePicture}`} alt="u" className="w-6.5 h-6.5 rounded-full object-cover border border-pink-100/50" />
                     ) : (
                       <span className="w-6.5 h-6.5 rounded-full bg-pink-50/50 border border-pink-100/20 flex items-center justify-center text-[9px] font-black text-primary">{u.name?.charAt(0)}</span>
                     )}

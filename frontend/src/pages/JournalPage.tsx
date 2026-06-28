@@ -4,6 +4,7 @@ import { Plus, Trash2, Edit2, Calendar, Upload, Search, List, Star } from 'lucid
 import { useForm } from 'react-hook-form';
 import { journalService } from '../api/services';
 import { useToast } from '../contexts/ToastContext';
+import { BACKEND_URL } from '../api/axios';
 import { LoadingSkeleton, EmptyState, Modal, Pagination } from '../components/ui';
 import type { JournalEntry } from '../types';
 
@@ -116,7 +117,7 @@ const JournalPage: React.FC = () => {
     setValue('rating', entry.rating || 3);
     setValue('notes', entry.notes);
     if (entry.progressPhoto) {
-      setImagePreview(`http://localhost:5000${entry.progressPhoto}`);
+      setImagePreview(`${BACKEND_URL}${entry.progressPhoto}`);
     } else {
       setImagePreview(null);
     }
@@ -353,7 +354,7 @@ const JournalPage: React.FC = () => {
                   {entry.progressPhoto && (
                     <div className="w-full md:w-44 h-44 rounded-2xl overflow-hidden flex-shrink-0 border border-pink-100/30 shadow-sm">
                       <img
-                        src={`http://localhost:5000${entry.progressPhoto}`}
+                        src={`${BACKEND_URL}${entry.progressPhoto}`}
                         alt="Skin photo log"
                         className="w-full h-full object-cover"
                       />

@@ -14,6 +14,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { analyticsService, routineService, photoService, productService, journalService, authService } from '../api/services';
 import AvatarManager from '../components/AvatarManager';
+import { BACKEND_URL } from '../api/axios';
 import { LoadingSkeleton } from '../components/ui';
 import type { DashboardStats, WeeklyActivity, Routine, Product, JournalEntry, Photo } from '../types';
 import { generateRoutineSteps, productDatabase } from '../utils/recommendationEngine';
@@ -720,7 +721,7 @@ const DashboardPage: React.FC = () => {
             {progressPhotos.slice(0, 6).map((photo) => (
               <div key={photo._id} className="relative group overflow-hidden rounded-2xl border border-pink-100/30 bg-white/40 shadow-sm p-1.5 flex flex-col space-y-1.5 hover:scale-102 transition-transform">
                 <img
-                  src={photo.image.startsWith('http') ? photo.image : `http://localhost:5000${photo.image}`}
+                  src={photo.image.startsWith('http') ? photo.image : `${BACKEND_URL}${photo.image}`}
                   alt="Skin Progress"
                   className="w-full aspect-square object-cover rounded-xl"
                   loading="lazy"
@@ -747,7 +748,7 @@ const DashboardPage: React.FC = () => {
             </h3>
             {user.skinReport.selfieImage ? (
               <img 
-                src={user.skinReport.selfieImage.startsWith('http') ? user.skinReport.selfieImage : `http://localhost:5000${user.skinReport.selfieImage}`} 
+                src={user.skinReport.selfieImage.startsWith('http') ? user.skinReport.selfieImage : `${BACKEND_URL}${user.skinReport.selfieImage}`} 
                 alt="Baseline Skin Selfie" 
                 className="w-full aspect-[4/3] object-cover rounded-2xl border border-pink-100/50 shadow-sm"
               />
@@ -1266,7 +1267,7 @@ const DashboardPage: React.FC = () => {
                   className="p-3.5 rounded-2xl flex items-center gap-3.5 border bg-white/50 border-pink-100/40"
                 >
                   {p.image ? (
-                    <img src={p.image.startsWith('http') ? p.image : `http://localhost:5000${p.image}`} alt={p.name} className="w-12 h-12 rounded-xl object-cover border border-white shadow-sm" />
+                    <img src={p.image.startsWith('http') ? p.image : `${BACKEND_URL}${p.image}`} alt={p.name} className="w-12 h-12 rounded-xl object-cover border border-white shadow-sm" />
                   ) : (
                     <div className="w-12 h-12 rounded-xl bg-red-50 text-coral flex items-center justify-center text-lg border border-red-100 shadow-sm">⚠️</div>
                   )}

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Edit2, Trash2, DollarSign, Clock, Calendar, Box, Filter } from 'lucide-react';
 import { useToast } from '../../contexts/ToastContext';
 import { productService, categoryService } from '../../api/services';
+import { BACKEND_URL } from '../../api/axios';
 import { LoadingSkeleton, EmptyState, Pagination, SearchInput } from '../../components/ui';
 import type { Product, Category } from '../../types';
 
@@ -167,7 +168,7 @@ const InventoryPage: React.FC = () => {
                       <div className="h-44 overflow-hidden relative bg-pink-50/20 flex items-center justify-center border-b border-pink-100/30">
                         {product.image ? (
                           <img
-                            src={product.image.startsWith('http') ? product.image : `http://localhost:5000${product.image}`}
+                            src={product.image.startsWith('http') ? product.image : `${BACKEND_URL}${product.image}`}
                             alt={product.name}
                             className="w-full h-full object-cover transition-transform hover:scale-105 duration-300"
                           />

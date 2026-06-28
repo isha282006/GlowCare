@@ -4,6 +4,7 @@ import { Save, ArrowRight, Check, BookOpen, Sparkles } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { authService, routineService } from '../api/services';
+import { BACKEND_URL } from '../api/axios';
 import { generateSmartAssessment } from '../utils/recommendationEngine';
 import type { RecommendedProduct } from '../utils/recommendationEngine';
 
@@ -162,7 +163,7 @@ const SkinReportPage: React.FC = () => {
               <div className="glass-card p-4.5 text-center space-y-3">
                 <h3 className="font-extrabold text-[10px] uppercase tracking-wider text-gray-400">Baseline Selfie</h3>
                 <img 
-                  src={report.selfieImage.startsWith('http') ? report.selfieImage : `http://localhost:5000${report.selfieImage}`} 
+                  src={report.selfieImage.startsWith('http') ? report.selfieImage : `${BACKEND_URL}${report.selfieImage}`} 
                   alt="Baseline Skin Assessment" 
                   className="w-full aspect-[4/3] object-cover rounded-xl border border-pink-100/50 shadow-sm"
                 />

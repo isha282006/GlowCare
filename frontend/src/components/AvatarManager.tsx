@@ -3,6 +3,7 @@ import { Camera, Trash2, Eye, Upload, RefreshCw, ZoomIn, RotateCw, X } from 'luc
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { profileService } from '../api/services';
+import { BACKEND_URL } from '../api/axios';
 
 interface AvatarManagerProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
@@ -29,7 +30,7 @@ const AvatarManager: React.FC<AvatarManagerProps> = ({ size = 'md', editable = t
 
   const profilePicUrl = user?.profilePhoto || user?.profilePicture;
   const avatarUrl = profilePicUrl 
-    ? (profilePicUrl.startsWith('http') ? profilePicUrl : `http://localhost:5000${profilePicUrl}`) 
+    ? (profilePicUrl.startsWith('http') ? profilePicUrl : `${BACKEND_URL}${profilePicUrl}`) 
     : null;
 
   // Size mapping

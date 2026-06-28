@@ -2,6 +2,7 @@ import { Response } from 'express';
 import User from '../models/User';
 import Photo from '../models/Photo';
 import { AuthRequest } from '../middleware/auth';
+import { getAbsoluteUrl, formatUserResponse } from './profileController';
 
 // @desc    Upload profile photo
 // @route   POST /api/upload/profile-photo
@@ -25,18 +26,8 @@ export const uploadProfilePhoto = async (req: AuthRequest, res: Response): Promi
 
     res.status(200).json({
       success: true,
-      imageUrl,
-      user: {
-        id: user!._id,
-        name: user!.name,
-        email: user!.email,
-        role: user!.role,
-        profilePhoto: user!.profilePhoto,
-        profilePicture: user!.profilePicture,
-        progressPhotos: user!.progressPhotos,
-        onboardingCompleted: user!.onboardingCompleted,
-        skinReport: user!.skinReport
-      }
+      imageUrl: getAbsoluteUrl(req, imageUrl),
+      user: formatUserResponse(req, user)
     });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });
@@ -76,8 +67,11 @@ export const uploadProgressPhoto = async (req: AuthRequest, res: Response): Prom
 
     res.status(201).json({
       success: true,
-      imageUrl,
-      photo
+      imageUrl: getAbsoluteUrl(req, imageUrl),
+      photo: {
+        ...photo.toObject(),
+        image: getAbsoluteUrl(req, photo.image)
+      }
     });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });

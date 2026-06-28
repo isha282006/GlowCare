@@ -1,6 +1,19 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
+declare const getAbsoluteUrl: (req: any, pathUrl: string | undefined) => string;
+declare const formatUserResponse: (req: any, user: any) => {
+    id: any;
+    name: any;
+    email: any;
+    role: any;
+    profilePhoto: string;
+    profilePicture: string;
+    progressPhotos: any;
+    onboardingCompleted: any;
+    skinReport: any;
+} | null;
 export declare const uploadOrUpdateProfilePhoto: (req: AuthRequest, res: Response) => Promise<void>;
 export declare const removeProfilePhoto: (req: AuthRequest, res: Response) => Promise<void>;
 export declare const getProfileMe: (req: AuthRequest, res: Response) => Promise<void>;
+export { getAbsoluteUrl, formatUserResponse };
 //# sourceMappingURL=profileController.d.ts.map

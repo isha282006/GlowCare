@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Upload, Image as ImageIcon } from 'lucide-react';
 import { useToast } from '../../contexts/ToastContext';
 import { productService, categoryService } from '../../api/services';
+import { BACKEND_URL } from '../../api/axios';
 import type { Category } from '../../types';
 
 interface ProductFormData {
@@ -57,7 +58,7 @@ const ProductFormPage: React.FC = () => {
         if (p.openingDate) setValue('openingDate', p.openingDate.split('T')[0]);
         if (p.expiryDate) setValue('expiryDate', p.expiryDate.split('T')[0]);
         setValue('notes', p.notes);
-        if (p.image) setImagePreview(p.image.startsWith('http') ? p.image : `http://localhost:5000${p.image}`);
+        if (p.image) setImagePreview(p.image.startsWith('http') ? p.image : `${BACKEND_URL}${p.image}`);
       }).catch(() => showToast('Failed to load product', 'error'));
     }
   }, [id, isEdit]);

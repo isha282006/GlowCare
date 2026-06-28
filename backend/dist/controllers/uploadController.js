@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.uploadProgressPhoto = exports.uploadProfilePhoto = void 0;
 const User_1 = __importDefault(require("../models/User"));
 const Photo_1 = __importDefault(require("../models/Photo"));
+const profileController_1 = require("./profileController");
 // @desc    Upload profile photo
 // @route   POST /api/upload/profile-photo
 const uploadProfilePhoto = async (req, res) => {
@@ -21,18 +22,8 @@ const uploadProfilePhoto = async (req, res) => {
         }, { new: true });
         res.status(200).json({
             success: true,
-            imageUrl,
-            user: {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                profilePhoto: user.profilePhoto,
-                profilePicture: user.profilePicture,
-                progressPhotos: user.progressPhotos,
-                onboardingCompleted: user.onboardingCompleted,
-                skinReport: user.skinReport
-            }
+            imageUrl: (0, profileController_1.getAbsoluteUrl)(req, imageUrl),
+            user: (0, profileController_1.formatUserResponse)(req, user)
         });
     }
     catch (error) {
@@ -68,8 +59,11 @@ const uploadProgressPhoto = async (req, res) => {
         });
         res.status(201).json({
             success: true,
-            imageUrl,
-            photo
+            imageUrl: (0, profileController_1.getAbsoluteUrl)(req, imageUrl),
+            photo: {
+                ...photo.toObject(),
+                image: (0, profileController_1.getAbsoluteUrl)(req, photo.image)
+            }
         });
     }
     catch (error) {

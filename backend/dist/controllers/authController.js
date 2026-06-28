@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.logout = exports.resetPassword = exports.forgotPassword = exports.uploadProfilePicture = exports.changePassword = exports.updateProfile = exports.getMe = exports.login = exports.register = void 0;
 const crypto_1 = __importDefault(require("crypto"));
 const User_1 = __importDefault(require("../models/User"));
+const profileController_1 = require("./profileController");
 // @desc    Register user
 // @route   POST /api/auth/register
 const register = async (req, res) => {
@@ -21,16 +22,7 @@ const register = async (req, res) => {
         res.status(201).json({
             success: true,
             token,
-            user: {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                profilePicture: user.profilePicture,
-                profilePhoto: user.profilePhoto,
-                progressPhotos: user.progressPhotos,
-                skinReport: user.skinReport,
-            },
+            user: (0, profileController_1.formatUserResponse)(req, user),
         });
     }
     catch (error) {
@@ -61,17 +53,7 @@ const login = async (req, res) => {
         res.status(200).json({
             success: true,
             token,
-            user: {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                profilePicture: user.profilePicture,
-                profilePhoto: user.profilePhoto,
-                progressPhotos: user.progressPhotos,
-                onboardingCompleted: user.onboardingCompleted,
-                skinReport: user.skinReport,
-            },
+            user: (0, profileController_1.formatUserResponse)(req, user),
         });
     }
     catch (error) {
@@ -87,16 +69,8 @@ const getMe = async (req, res) => {
         res.status(200).json({
             success: true,
             user: {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                profilePicture: user.profilePicture,
-                profilePhoto: user.profilePhoto,
-                progressPhotos: user.progressPhotos,
+                ...(0, profileController_1.formatUserResponse)(req, user),
                 createdAt: user.createdAt,
-                skinReport: user.skinReport,
-                onboardingCompleted: user.onboardingCompleted,
             },
         });
     }
@@ -126,17 +100,7 @@ const updateProfile = async (req, res) => {
         await user.save();
         res.status(200).json({
             success: true,
-            user: {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                profilePicture: user.profilePicture,
-                profilePhoto: user.profilePhoto,
-                progressPhotos: user.progressPhotos,
-                skinReport: user.skinReport,
-                onboardingCompleted: user.onboardingCompleted,
-            },
+            user: (0, profileController_1.formatUserResponse)(req, user),
         });
     }
     catch (error) {

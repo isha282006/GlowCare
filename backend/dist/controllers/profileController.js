@@ -3,8 +3,45 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getProfileMe = exports.removeProfilePhoto = exports.uploadOrUpdateProfilePhoto = void 0;
+exports.formatUserResponse = exports.getAbsoluteUrl = exports.getProfileMe = exports.removeProfilePhoto = exports.uploadOrUpdateProfilePhoto = void 0;
 const User_1 = __importDefault(require("../models/User"));
+// Helper to construct absolute URL
+const getAbsoluteUrl = (req, pathUrl) => {
+    if (!pathUrl)
+        return '';
+    if (pathUrl.startsWith('http'))
+        return pathUrl;
+    const host = req.get('host');
+    // Use https if deployed on Render or proxy header says so
+    const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+    return `${protocol}://${host}${pathUrl.startsWith('/') ? '' : '/'}${pathUrl}`;
+};
+exports.getAbsoluteUrl = getAbsoluteUrl;
+// Helper to format User object with absolute URLs
+const formatUserResponse = (req, user) => {
+    if (!user)
+        return null;
+    // Format skinReport selfieImage if exists
+    let formattedReport = user.skinReport;
+    if (formattedReport && typeof formattedReport === 'object') {
+        formattedReport = { ...formattedReport };
+        if (formattedReport.selfieImage) {
+            formattedReport.selfieImage = getAbsoluteUrl(req, formattedReport.selfieImage);
+        }
+    }
+    return {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        profilePhoto: getAbsoluteUrl(req, user.profilePhoto),
+        profilePicture: getAbsoluteUrl(req, user.profilePicture),
+        progressPhotos: (user.progressPhotos || []).map((p) => getAbsoluteUrl(req, p)),
+        onboardingCompleted: user.onboardingCompleted,
+        skinReport: formattedReport
+    };
+};
+exports.formatUserResponse = formatUserResponse;
 // @desc    Upload / Update profile photo
 // @route   POST /api/profile/upload-photo or PUT /api/profile/update-photo
 const uploadOrUpdateProfilePhoto = async (req, res) => {
@@ -21,18 +58,8 @@ const uploadOrUpdateProfilePhoto = async (req, res) => {
         res.status(200).json({
             success: true,
             message: 'Upload Successful',
-            imageUrl,
-            user: {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                profilePhoto: user.profilePhoto,
-                profilePicture: user.profilePicture,
-                progressPhotos: user.progressPhotos,
-                onboardingCompleted: user.onboardingCompleted,
-                skinReport: user.skinReport
-            }
+            imageUrl: getAbsoluteUrl(req, imageUrl),
+            user: formatUserResponse(req, user)
         });
     }
     catch (error) {
@@ -51,17 +78,7 @@ const removeProfilePhoto = async (req, res) => {
         res.status(200).json({
             success: true,
             message: 'Image Removed',
-            user: {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                profilePhoto: user.profilePhoto,
-                profilePicture: user.profilePicture,
-                progressPhotos: user.progressPhotos,
-                onboardingCompleted: user.onboardingCompleted,
-                skinReport: user.skinReport
-            }
+            user: formatUserResponse(req, user)
         });
     }
     catch (error) {
@@ -80,17 +97,7 @@ const getProfileMe = async (req, res) => {
         }
         res.status(200).json({
             success: true,
-            user: {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                profilePhoto: user.profilePhoto,
-                profilePicture: user.profilePicture,
-                progressPhotos: user.progressPhotos,
-                onboardingCompleted: user.onboardingCompleted,
-                skinReport: user.skinReport
-            }
+            user: formatUserResponse(req, user)
         });
     }
     catch (error) {

@@ -2,6 +2,7 @@ import { Response } from 'express';
 import crypto from 'crypto';
 import User from '../models/User';
 import { AuthRequest } from '../middleware/auth';
+import { formatUserResponse } from './profileController';
 
 // @desc    Register user
 // @route   POST /api/auth/register
@@ -21,16 +22,7 @@ export const register = async (req: AuthRequest, res: Response): Promise<void> =
     res.status(201).json({
       success: true,
       token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        profilePicture: user.profilePicture,
-        profilePhoto: user.profilePhoto,
-        progressPhotos: user.progressPhotos,
-        skinReport: user.skinReport,
-      },
+      user: formatUserResponse(req, user),
     });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });
@@ -65,17 +57,7 @@ export const login = async (req: AuthRequest, res: Response): Promise<void> => {
     res.status(200).json({
       success: true,
       token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        profilePicture: user.profilePicture,
-        profilePhoto: user.profilePhoto,
-        progressPhotos: user.progressPhotos,
-        onboardingCompleted: user.onboardingCompleted,
-        skinReport: user.skinReport,
-      },
+      user: formatUserResponse(req, user),
     });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });
@@ -90,16 +72,8 @@ export const getMe = async (req: AuthRequest, res: Response): Promise<void> => {
     res.status(200).json({
       success: true,
       user: {
-        id: user!._id,
-        name: user!.name,
-        email: user!.email,
-        role: user!.role,
-        profilePicture: user!.profilePicture,
-        profilePhoto: user!.profilePhoto,
-        progressPhotos: user!.progressPhotos,
+        ...formatUserResponse(req, user),
         createdAt: user!.createdAt,
-        skinReport: user!.skinReport,
-        onboardingCompleted: user!.onboardingCompleted,
       },
     });
   } catch (error: any) {
@@ -128,17 +102,7 @@ export const updateProfile = async (req: AuthRequest, res: Response): Promise<vo
 
     res.status(200).json({
       success: true,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        profilePicture: user.profilePicture,
-        profilePhoto: user.profilePhoto,
-        progressPhotos: user.progressPhotos,
-        skinReport: user.skinReport,
-        onboardingCompleted: user.onboardingCompleted,
-      },
+      user: formatUserResponse(req, user),
     });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });
