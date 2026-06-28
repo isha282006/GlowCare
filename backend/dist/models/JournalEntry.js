@@ -80,6 +80,43 @@ const JournalEntrySchema = new mongoose_1.Schema({
         type: String,
         default: '',
     },
+    skinCondition: {
+        type: String,
+        default: '',
+    },
+    acne: {
+        type: String,
+        enum: ['None', 'Mild', 'Moderate', 'Severe'],
+        default: 'None',
+    },
+    dryness: {
+        type: String,
+        enum: ['None', 'Mild', 'Moderate', 'Severe'],
+        default: 'None',
+    },
+    oiliness: {
+        type: String,
+        enum: ['None', 'Mild', 'Moderate', 'Severe'],
+        default: 'None',
+    },
+    redness: {
+        type: String,
+        enum: ['None', 'Mild', 'Moderate', 'Severe'],
+        default: 'None',
+    },
+    reaction: {
+        type: String,
+        default: '',
+    },
+    rating: {
+        type: Number,
+        min: 1,
+        max: 5,
+        default: 3,
+    },
+    images: [{
+            type: String,
+        }],
     createdAt: {
         type: Date,
         default: Date.now,

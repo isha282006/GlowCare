@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { FiArrowLeft, FiPlus, FiTrash2, FiEdit2 } from 'react-icons/fi';
+import { ArrowLeft, Plus, Trash2, Edit2 } from 'lucide-react';
 import { categoryService } from '../../api/services';
 import { useToast } from '../../contexts/ToastContext';
 import { LoadingSkeleton, Modal } from '../../components/ui';
@@ -72,54 +72,52 @@ const ManageCategoriesPage: React.FC = () => {
   };
 
   return (
-    <div className="page-container max-w-4xl">
-      <button onClick={() => navigate('/admin')} className="btn-secondary mb-4 text-sm flex items-center gap-1">
-        <FiArrowLeft /> Back to Admin
+    <div className="page-container max-w-4xl relative z-10">
+      <button onClick={() => navigate('/admin')} className="btn-secondary mb-5 text-xs font-semibold flex items-center gap-2">
+        <ArrowLeft size={14} /> Back to Admin
       </button>
 
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4 text-left">
         <div>
-          <h1 className="page-title">Manage Categories 🏷️</h1>
+          <h1 className="page-title flex items-center gap-2">Manage Categories 🏷️</h1>
           <p className="page-subtitle">Add or edit product categories that users map their products into</p>
         </div>
-        <button onClick={() => { setEditingItem(null); reset(); setIsModalOpen(true); }} className="btn-primary flex items-center gap-1">
-          <FiPlus /> New Category
+        <button onClick={() => { setEditingItem(null); reset(); setIsModalOpen(true); }} className="btn-primary flex items-center gap-1.5 text-xs font-black py-2.5 px-6 shadow-md cursor-pointer self-start sm:self-center">
+          <Plus size={15} /> New Category
         </button>
       </div>
 
       {loading ? (
-        <LoadingSkeleton count={3} />
+        <LoadingSkeleton type="card" count={3} />
       ) : categories.length === 0 ? (
-        <div className="text-center py-12">No categories found. Click add to create one.</div>
+        <div className="text-center py-12 bg-white/20 rounded-3xl border border-pink-100 border-dashed font-semibold text-xs text-gray-400">No categories found. Click add to create one.</div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-left">
           {categories.map(c => (
             <div
               key={c._id}
-              className="glass-card p-5 flex items-center justify-between gap-4"
+              className="glass-card p-5.5 flex items-center justify-between gap-4 border border-white/40 shadow-sm"
             >
-              <div className="flex items-center gap-3">
-                <span className="text-3xl">{c.icon || '🧴'}</span>
+              <div className="flex items-center gap-4.5">
+                <span className="text-3.5xl filter drop-shadow-sm">{c.icon || '🧴'}</span>
                 <div>
-                  <h3 className="font-bold text-sm">{c.name}</h3>
-                  <p className="text-xs text-gray-400 mt-0.5">{c.description || 'No description'}</p>
+                  <h3 className="font-extrabold text-sm text-gray-800">{c.name}</h3>
+                  <p className="text-[10px] text-gray-400 font-semibold mt-0.5 leading-relaxed">{c.description || 'No description'}</p>
                 </div>
               </div>
               
-              <div className="flex gap-2">
+              <div className="flex gap-1.5">
                 <button
                   onClick={() => handleEditClick(c)}
-                  className="p-2 text-gray-500 hover:bg-gray-100 rounded-xl cursor-pointer border-none"
-                  style={{ background: 'transparent' }}
+                  className="p-2 text-gray-400 hover:text-primary rounded-xl cursor-pointer border-none bg-transparent"
                 >
-                  <FiEdit2 size={14} />
+                  <Edit2 size={13} />
                 </button>
                 <button
                   onClick={() => handleDelete(c._id)}
-                  className="p-2 text-red-500 hover:bg-red-50 rounded-xl cursor-pointer border-none"
-                  style={{ background: 'transparent' }}
+                  className="p-2 text-coral rounded-xl cursor-pointer border-none bg-transparent"
                 >
-                  <FiTrash2 size={14} />
+                  <Trash2 size={13} />
                 </button>
               </div>
             </div>
@@ -129,26 +127,26 @@ const ManageCategoriesPage: React.FC = () => {
 
       {/* Modal */}
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingItem ? 'Edit Category' : 'Create Category'}>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid grid-cols-3 gap-3">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4.5 text-left">
+          <div className="grid grid-cols-3 gap-4">
             <div className="col-span-1">
-              <label className="block text-sm font-semibold mb-2">Icon (Emoji)</label>
-              <input {...register('icon', { required: 'Required' })} className="input-field text-center" placeholder="🧴" />
+              <label className="block text-xs font-bold uppercase text-gray-400 mb-1.5">Icon (Emoji)</label>
+              <input {...register('icon', { required: 'Required' })} className="input-field text-center font-bold text-lg" placeholder="🧴" />
             </div>
             <div className="col-span-2">
-              <label className="block text-sm font-semibold mb-2">Category Name *</label>
+              <label className="block text-xs font-bold uppercase text-gray-400 mb-1.5">Category Name *</label>
               <input {...register('name', { required: 'Required' })} className="input-field" placeholder="Cleanser" />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-semibold mb-2">Description</label>
+            <label className="block text-xs font-bold uppercase text-gray-400 mb-1.5">Description</label>
             <textarea {...register('description')} className="input-field" rows={3} placeholder="Facial cleansers and wash products" />
           </div>
 
-          <div className="flex gap-2 pt-2">
-            <button type="submit" className="btn-primary flex-1">Save Category</button>
-            <button type="button" onClick={() => setIsModalOpen(false)} className="btn-secondary">Cancel</button>
+          <div className="flex gap-2.5 pt-3 border-t border-pink-100/50">
+            <button type="submit" className="btn-primary flex-1 text-xs font-black py-3.5 shadow-md cursor-pointer">Save Category</button>
+            <button type="button" onClick={() => setIsModalOpen(false)} className="btn-secondary text-xs py-3.5 px-6">Cancel</button>
           </div>
         </form>
       </Modal>

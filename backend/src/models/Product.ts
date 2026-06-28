@@ -13,6 +13,8 @@ export interface IProduct extends Document {
   expiryDate: Date;
   image: string;
   notes: string;
+  price: number;
+  routineUsage: 'morning' | 'night' | 'both' | 'none';
   status: 'active' | 'expired' | 'expiring' | 'low';
   createdAt: Date;
 }
@@ -69,6 +71,15 @@ const ProductSchema = new Schema<IProduct>({
   notes: {
     type: String,
     default: '',
+  },
+  price: {
+    type: Number,
+    default: 0,
+  },
+  routineUsage: {
+    type: String,
+    enum: ['morning', 'night', 'both', 'none'],
+    default: 'both',
   },
   status: {
     type: String,

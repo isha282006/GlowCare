@@ -84,6 +84,7 @@ const moveToInventory = async (req, res) => {
             category: item.category || 'Other',
             quantity: 100,
             purchaseDate: new Date(),
+            price: item.price || 0,
             notes: item.notes,
         });
         await Wishlist_1.default.findByIdAndDelete(req.params.id);

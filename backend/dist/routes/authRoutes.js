@@ -10,7 +10,10 @@ const router = (0, express_1.Router)();
 router.post('/register', (0, validate_1.validate)([
     (0, express_validator_1.body)('name').notEmpty().withMessage('Name is required'),
     (0, express_validator_1.body)('email').isEmail().withMessage('Valid email is required'),
-    (0, express_validator_1.body)('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+    (0, express_validator_1.body)('password')
+        .isLength({ min: 8 }).withMessage('Password must be at least 8 characters')
+        .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]/)
+        .withMessage('Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'),
 ]), authController_1.register);
 router.post('/login', (0, validate_1.validate)([
     (0, express_validator_1.body)('email').isEmail().withMessage('Valid email is required'),

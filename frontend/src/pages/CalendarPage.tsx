@@ -1,14 +1,11 @@
 import React, { useEffect, useState } from 'react';
-
-import { FiChevronLeft, FiChevronRight, FiCalendar, FiClock, FiFileText, FiCamera, FiAlertTriangle } from 'react-icons/fi';
+import { ChevronLeft, ChevronRight, Calendar, Clock, FileText, Camera, AlertTriangle, Heart, Sparkles } from 'lucide-react';
 import { calendarService } from '../api/services';
 import { useToast } from '../contexts/ToastContext';
-import { useTheme } from '../contexts/ThemeContext';
 import { LoadingSkeleton, Modal } from '../components/ui';
 import type { CalendarEvent } from '../types';
 
 const CalendarPage: React.FC = () => {
-  const { isDark } = useTheme();
   const { showToast } = useToast();
   
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -18,10 +15,6 @@ const CalendarPage: React.FC = () => {
   // Selected day details
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
   const [selectedEvents, setSelectedEvents] = useState<CalendarEvent[]>([]);
-
-  useEffect(() => {
-    fetchEvents();
-  }, [currentDate]);
 
   const fetchEvents = async () => {
     try {
@@ -36,6 +29,10 @@ const CalendarPage: React.FC = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchEvents();
+  }, [currentDate]);
 
   const getDaysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
 
@@ -68,9 +65,9 @@ const CalendarPage: React.FC = () => {
 
     const days = [];
     
-    // Empty cells for alignment before first day of month
+    // Padding empty cells
     for (let i = 0; i < firstDayIndex; i++) {
-      days.push(<div key={`empty-${i}`} className="h-20 border-b border-r border-transparent opacity-20" />);
+      days.push(<div key={`empty-${i}`} className="h-24 border-b border-r border-transparent opacity-20" />);
     }
 
     const todayStr = new Date().toISOString().split('T')[0];
@@ -91,28 +88,29 @@ const CalendarPage: React.FC = () => {
         <div
           key={`day-${dayNum}`}
           onClick={() => handleDayClick(dayNum)}
-          className={`h-24 p-2 border-b border-r flex flex-col justify-between cursor-pointer transition-all hover:bg-lavender-light/10 dark:hover:bg-dark-border/20 ${
+          className={`h-24 p-2 border-b border-r flex flex-col justify-between cursor-pointer transition-all hover:bg-pink-100/10 ${
             isToday
-              ? 'bg-lavender/10 font-bold border-t-2 border-t-lavender'
-              : 'border-gray-100 dark:border-dark-border'
+              ? 'bg-pink-50/20 font-bold border-t-2 border-t-primary'
+              : 'border-pink-100/35'
           }`}
         >
           <div className="flex justify-between items-center">
-            <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${
-              isToday ? 'bg-lavender text-lavender-dark dark:text-lavender-light font-extrabold' : ''
+            <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
+              isToday ? 'bg-primary text-white font-black' : 'text-gray-500'
             }`}>
               {dayNum}
             </span>
           </div>
 
-          {/* Render event micro-indicators */}
-          <div className="flex flex-wrap gap-1 mt-1 max-h-12 overflow-hidden">
+          {/* Micro indicators */}
+          <div className="flex flex-wrap gap-1 mt-1 max-h-12 overflow-hidden justify-start">
             {dayEvents.map((e, idx) => {
               let color = 'bg-lavender';
-              if (e.type === 'routine') color = e.subType === 'morning' ? 'bg-amber-300' : 'bg-indigo-400';
-              if (e.type === 'journal') color = 'bg-mint-dark';
-              if (e.type === 'photo') color = 'bg-sky-dark';
+              if (e.type === 'routine') color = e.subType === 'morning' ? 'bg-amber-350' : 'bg-indigo-400';
+              if (e.type === 'journal') color = 'bg-green-400';
+              if (e.type === 'photo') color = 'bg-sky-400';
               if (e.type === 'expiry') color = 'bg-coral';
+              if ((e.type as string) === 'wishlist') color = 'bg-primary';
               
               return (
                 <span
@@ -132,35 +130,37 @@ const CalendarPage: React.FC = () => {
 
   const getEventIcon = (type: string) => {
     switch (type) {
-      case 'routine': return <FiClock className="text-lavender" />;
-      case 'journal': return <FiFileText className="text-mint" />;
-      case 'photo': return <FiCamera className="text-sky" />;
-      case 'expiry': return <FiAlertTriangle className="text-rose" />;
-      default: return <FiCalendar />;
+      case 'routine': return <Clock className="text-primary" />;
+      case 'journal': return <FileText className="text-green-500" />;
+      case 'photo': return <Camera className="text-sky-500" />;
+      case 'expiry': return <AlertTriangle className="text-coral" />;
+      case 'wishlist': return <Heart className="text-primary" />;
+      default: return <Calendar />;
     }
   };
 
   return (
-    <div className="page-container">
-      <div className="flex items-center justify-between mb-6">
+    <div className="page-container max-w-5xl relative z-10">
+      <div className="flex items-center justify-between mb-8 text-left">
         <div>
-          <h1 className="page-title">Skin Calendar 📅</h1>
-          <p className="page-subtitle">Interactive visual log tracking routines, journal updates, and product expirations</p>
+          <h1 className="page-title flex items-center gap-2">Skin Calendar 📅</h1>
+          <p className="page-subtitle">Visual month calendar tracking routines completion, journals, progress photo snaps, and wishlist reminders</p>
         </div>
       </div>
 
-      <div className="glass-card p-6">
-        {/* Calendar Nav */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold">
+      <div className="glass-card p-6 border border-white/40 shadow-sm text-left">
+        {/* Nav */}
+        <div className="flex items-center justify-between mb-6 border-b border-pink-100/50 pb-4">
+          <h2 className="text-lg font-black text-gray-800 flex items-center gap-2">
+            <Sparkles size={18} className="text-primary animate-pulse" />
             {currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
           </h2>
           <div className="flex gap-2">
-            <button onClick={handlePrevMonth} className="btn-secondary p-2 flex items-center justify-center cursor-pointer border-none" style={{ background: 'rgba(200, 182, 255, 0.15)' }}>
-              <FiChevronLeft size={20} />
+            <button onClick={handlePrevMonth} className="btn-secondary p-2 flex items-center justify-center cursor-pointer bg-white border-none shadow-sm">
+              <ChevronLeft size={16} />
             </button>
-            <button onClick={handleNextMonth} className="btn-secondary p-2 flex items-center justify-center cursor-pointer border-none" style={{ background: 'rgba(200, 182, 255, 0.15)' }}>
-              <FiChevronRight size={20} />
+            <button onClick={handleNextMonth} className="btn-secondary p-2 flex items-center justify-center cursor-pointer bg-white border-none shadow-sm">
+              <ChevronRight size={16} />
             </button>
           </div>
         </div>
@@ -168,11 +168,11 @@ const CalendarPage: React.FC = () => {
         {loading ? (
           <LoadingSkeleton type="chart" />
         ) : (
-          <div className="border border-gray-100 dark:border-dark-border rounded-2xl overflow-hidden">
+          <div className="border border-pink-100/40 rounded-2xl overflow-hidden shadow-sm bg-white/40">
             {/* Days of Week */}
-            <div className="grid grid-cols-7 text-center font-semibold text-xs py-2 bg-gray-50/50 dark:bg-dark-card/50 border-b border-gray-100 dark:border-dark-border">
+            <div className="grid grid-cols-7 text-center font-bold text-[9px] uppercase py-2.5 bg-pink-50/20 border-b border-pink-100/40 text-gray-400 tracking-wider">
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
-                <div key={d} className="py-2">{d}</div>
+                <div key={d} className="py-0.5">{d}</div>
               ))}
             </div>
 
@@ -182,6 +182,16 @@ const CalendarPage: React.FC = () => {
             </div>
           </div>
         )}
+
+        {/* Legend */}
+        <div className="flex flex-wrap gap-4.5 justify-center mt-6 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+          <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-amber-300" /> Morning Routine</div>
+          <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-indigo-400" /> Night Routine</div>
+          <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-green-400" /> Journal Entry</div>
+          <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-sky-400" /> Photo Upload</div>
+          <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-coral" /> Product Expiration</div>
+          <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-primary" /> Wishlist Reminder</div>
+        </div>
       </div>
 
       {/* Detail Modal */}
@@ -189,24 +199,20 @@ const CalendarPage: React.FC = () => {
         selectedDay ? selectedDay.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : ''
       }>
         {selectedEvents.length === 0 ? (
-          <p className="text-sm text-center py-6" style={{ color: '#888' }}>No logs or notifications on this date.</p>
+          <p className="text-xs text-center py-6 text-gray-400 font-semibold">No skincare logs or events scheduled on this date.</p>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-3.5 text-left">
             {selectedEvents.map((e, idx) => (
               <div
                 key={idx}
-                className="flex items-center gap-3 p-4 rounded-2xl border"
-                style={{
-                  background: isDark ? 'rgba(26,26,46,0.5)' : '#fafafa',
-                  borderColor: isDark ? 'var(--color-dark-border)' : 'rgba(200, 182, 255, 0.1)'
-                }}
+                className="flex items-center gap-3.5 p-4 rounded-2xl border bg-white/50 border-pink-100/30 shadow-sm"
               >
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center text-lg" style={{ background: 'rgba(200,182,255,0.1)' }}>
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center text-base bg-pink-50/40" style={{ color: 'var(--color-primary)' }}>
                   {getEventIcon(e.type)}
                 </div>
                 <div>
-                  <h4 className="font-bold text-sm">{e.title}</h4>
-                  <p className="text-xs text-gray-500">{e.detail}</p>
+                  <h4 className="font-extrabold text-xs text-gray-800">{e.title}</h4>
+                  <p className="text-[10px] text-gray-400 mt-1 font-semibold leading-relaxed">{e.detail}</p>
                 </div>
               </div>
             ))}

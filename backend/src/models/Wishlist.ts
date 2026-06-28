@@ -7,6 +7,8 @@ export interface IWishlist extends Document {
   category: string;
   priority: 'low' | 'medium' | 'high';
   notes: string;
+  price: number;
+  reminderDate?: Date;
   createdAt: Date;
 }
 
@@ -38,6 +40,13 @@ const WishlistSchema = new Schema<IWishlist>({
   notes: {
     type: String,
     default: '',
+  },
+  price: {
+    type: Number,
+    default: 0,
+  },
+  reminderDate: {
+    type: Date,
   },
   createdAt: {
     type: Date,

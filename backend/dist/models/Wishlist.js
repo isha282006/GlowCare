@@ -63,6 +63,13 @@ const WishlistSchema = new mongoose_1.Schema({
         type: String,
         default: '',
     },
+    price: {
+        type: Number,
+        default: 0,
+    },
+    reminderDate: {
+        type: Date,
+    },
     createdAt: {
         type: Date,
         default: Date.now,

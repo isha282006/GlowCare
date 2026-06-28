@@ -13,6 +13,7 @@ export interface IUser extends Document {
   createdAt: Date;
   skinReport?: any;
   onboardingCompleted: boolean;
+  hasInteractedWithInventory: boolean;
   comparePassword(candidatePassword: string): Promise<boolean>;
   getSignedJwtToken(): string;
 }
@@ -34,7 +35,7 @@ const UserSchema = new Schema<IUser>({
   password: {
     type: String,
     required: [true, 'Please provide a password'],
-    minlength: [6, 'Password must be at least 6 characters'],
+    minlength: [8, 'Password must be at least 8 characters'],
     select: false,
   },
   role: {
@@ -53,6 +54,10 @@ const UserSchema = new Schema<IUser>({
     default: null,
   },
   onboardingCompleted: {
+    type: Boolean,
+    default: false,
+  },
+  hasInteractedWithInventory: {
     type: Boolean,
     default: false,
   },

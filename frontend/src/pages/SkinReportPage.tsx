@@ -1,153 +1,92 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiSave, FiArrowRight, FiCheck, FiAlertTriangle, FiBookOpen } from 'react-icons/fi';
+import { Save, ArrowRight, Check, AlertTriangle, BookOpen, Sparkles } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
-import { useTheme } from '../contexts/ThemeContext';
-import { authService } from '../api/services';
+import { authService, routineService } from '../api/services';
+import { generateSkinRecommendations, generateRoutineSteps } from '../utils/recommendationEngine';
+import type { RecommendedProduct } from '../utils/recommendationEngine';
 
 const SkinReportPage: React.FC = () => {
   const navigate = useNavigate();
   const { user, updateUser } = useAuth();
   const { showToast } = useToast();
-  const { isDark } = useTheme();
   const [saving, setSaving] = useState(false);
 
   // Load choices from localStorage (with fallbacks)
   const skinType = localStorage.getItem('glowcare_user_skin_type') || 'normal';
-  const acne = localStorage.getItem('glowcare_user_acne') || 'none';
-  const pigmentation = localStorage.getItem('glowcare_user_pigmentation') || 'none';
-  const sunscreen = localStorage.getItem('glowcare_user_sunscreen') || 'daily';
-  const routineConsistency = localStorage.getItem('glowcare_user_routine_consistency') || 'always';
-  const waterGoal = Number(localStorage.getItem('glowcare_user_water_goal') || '2.0'); // In Liters
-  const sleepHours = Number(localStorage.getItem('glowcare_user_sleep_goal') || '8');
-  
-  const concernsStr = localStorage.getItem('glowcare_user_concerns') || '[]';
-  const concerns: string[] = JSON.parse(concernsStr);
+  const acne = localStorage.getItem('glowcare_user_acne') || 'None';
+  const pigmentation = localStorage.getItem('glowcare_user_pigmentation') || 'None';
+  const darkCircles = localStorage.getItem('glowcare_user_dark_circles') || 'None';
+  const dryness = localStorage.getItem('glowcare_user_dryness') || 'None';
+  const oiliness = localStorage.getItem('glowcare_user_oiliness') || 'None';
+  const isSensitive = localStorage.getItem('glowcare_user_sensitive') || 'No';
+  const mainConcern = localStorage.getItem('glowcare_user_main_concern') || 'acne';
+  const mainGoal = localStorage.getItem('glowcare_user_main_goal') || 'glow';
 
   // Generate the report programmatically based on the precise rules
   const report = user?.skinReport || calculateReport();
 
   function calculateReport() {
-    // 1. Skin Score Calculation
-    let score = 100;
-    if (acne === 'frequent') score -= 10;
-    if (acne === 'severe') score -= 20;
-    
-    if (pigmentation === 'moderate') score -= 8;
-    if (pigmentation === 'severe') score -= 15;
-    
-    if (sunscreen === 'never') score -= 10;
-    if (waterGoal < 1.0) score -= 5;
-    if (sleepHours < 6) score -= 5;
-    
-    if (routineConsistency === 'rarely') score -= 10;
-    if (routineConsistency === 'never') score -= 20;
-    
-    score = Math.max(30, Math.min(100, score));
-
-    // 2. Levels based on choices
-    const acneLevel = acne === 'severe' ? 'Severe' : acne === 'frequent' ? 'Moderate' : 'Low';
-    const pigmentationLevel = pigmentation === 'severe' ? 'Severe' : pigmentation === 'moderate' ? 'Moderate' : 'Low';
-    const hydration = (skinType === 'dry' || waterGoal < 1.0) ? 'Low' : 'Good';
-    const oiliness = skinType === 'oily' ? 'High' : skinType === 'combination' ? 'Moderate' : 'Low';
-    const sensitivity = skinType === 'sensitive' ? 'High' : 'Low';
-
-    // 3. Rule-based recommendations
-    const recs: string[] = [];
-    const morningRoutine = ['Gentle Cleanser'];
-    const nightRoutine = ['Cleanser'];
-
-    // Skin type rules
-    if (skinType === 'oily') {
-      morningRoutine[0] = 'Oil-Free Cleanser';
-      morningRoutine.push('Gel Moisturizer');
-      morningRoutine.push('Niacinamide');
-      recs.push('Use light gel-based formulations to prevent pore clogging.');
-    }
-    if (skinType === 'dry') {
-      morningRoutine[0] = 'Cream Cleanser';
-      morningRoutine.push('Ceramide Moisturizer');
-      morningRoutine.push('Hyaluronic Acid');
-      recs.push('Incorporate rich moisturizers to restore lipid balance.');
-    }
-    if (skinType === 'sensitive') {
-      recs.push('Always select fragrance-free skincare products.');
-      morningRoutine[0] = 'Gentle Cleanser';
-      morningRoutine.push('Ceramide Moisturizer');
-    }
-
-    // Acne rules
-    if (acne === 'frequent' || acne === 'severe') {
-      recs.push('Salicylic Acid (BHA) for deep pore exfoliation.');
-      recs.push('Benzoyl Peroxide to kill acne-causing bacteria.');
-      nightRoutine.push('Salicylic Acid');
-      nightRoutine.push('Benzoyl Peroxide Treatment');
-    }
-
-    // Pigmentation rules
-    if (pigmentation === 'moderate' || pigmentation === 'severe') {
-      recs.push('Vitamin C in the morning to inhibit melanin production.');
-      recs.push('Niacinamide to reduce hyperpigmentation transfers.');
-      morningRoutine.push('Vitamin C');
-      morningRoutine.push('Niacinamide');
-    }
-
-    // Always recommend sunscreen
-    morningRoutine.push('Sunscreen SPF 50');
-
-    // General night recommendations
-    nightRoutine.push('Moisturizer');
-
-    // Healthy habits list
-    const healthyHabits = [
-      '💧 Drink at least 2L of water',
-      '😴 Sleep 7–8 hours',
-      '☀️ Apply sunscreen every morning',
-      '🥗 Eat fruits and vegetables',
-      '🧘 Reduce stress'
-    ];
-
-    // Weekly goals template
-    const weeklyGoals = {
-      morningRoutine: '0/7',
-      nightRoutine: '0/7',
-      drinkWater: '0/7',
-      sleepHours: '0/7'
-    };
-
-    // Warnings and reminders
-    const warnings: string[] = [];
-    if (sunscreen === 'never') {
-      warnings.push('Daily sunscreen is highly recommended to prevent pigmentation and premature aging.');
-    }
-    if (waterGoal < 1.0) {
-      warnings.push('You should drink more water to keep your skin hydrated.');
-    }
-    if (sleepHours < 6) {
-      warnings.push('Better sleep improves skin repair and reduces dark circles.');
-    }
-
-    return {
-      skinScore: score,
-      skinType: skinType.charAt(0).toUpperCase() + skinType.slice(1),
-      acneLevel,
-      pigmentationLevel,
-      hydration,
+    return generateSkinRecommendations({
+      skinType: skinType || 'normal',
+      acne: acne,
+      pigmentation: pigmentation,
+      darkCircles,
+      dryness,
       oiliness,
-      sensitivity,
-      recommendations: recs,
-      generatedRoutine: {
-        morning: Array.from(new Set(morningRoutine)),
-        night: Array.from(new Set(nightRoutine))
-      },
-      healthyHabits,
-      weeklyGoals,
-      warnings,
-      waterGoal: waterGoal,
-      sleepGoal: sleepHours
-    };
+      isSensitive,
+      mainConcern,
+      mainGoal
+    });
   }
+
+  const saveRoutinesToDatabase = async (r: any) => {
+    try {
+      const dryVal = r.drynessLevel || dryness;
+      const oilVal = r.oilinessLevel || oiliness;
+      const acneVal = r.acneLevel || acne;
+      const pigVal = r.pigmentationLevel || pigmentation;
+      const dcVal = r.darkCircles || darkCircles;
+      const sensVal = r.isSensitive || isSensitive;
+
+      const { morning, night } = generateRoutineSteps(
+        r.skinType.toLowerCase(),
+        acneVal === 'None' ? 'No' : 'Yes',
+        pigVal === 'None' ? 'No' : 'Yes',
+        r.mainConcern === 'pigmentation' || r.mainConcern === 'dark_spots' ? 'Yes' : 'No',
+        r.mainConcern === 'lip_pigmentation' ? 'Yes' : 'No',
+        dcVal === 'None' ? 'No' : 'Yes',
+        r.mainConcern === 'fine_lines' ? 'Yes' : 'No',
+        dryVal,
+        oilVal,
+        sensVal
+      );
+
+      // Save morning routine
+      const morningSteps = morning.map(step => ({
+        order: step.order,
+        stepType: step.category,
+        productName: `${step.brand} ${step.name}`,
+        completed: false
+      }));
+
+      // Save night routine
+      const nightSteps = night.map(step => ({
+        order: step.order,
+        stepType: step.category === 'Eye Care' ? 'Eye Cream' : step.category === 'Lip Care' ? 'Lip Balm' : step.category,
+        productName: `${step.brand} ${step.name}`,
+        completed: false
+      }));
+
+      await Promise.all([
+        routineService.create({ type: 'morning', steps: morningSteps }),
+        routineService.create({ type: 'night', steps: nightSteps })
+      ]);
+    } catch (error) {
+      console.error('Failed to auto-generate and save routines:', error);
+    }
+  };
 
   const handleSaveReport = async () => {
     setSaving(true);
@@ -155,7 +94,8 @@ const SkinReportPage: React.FC = () => {
       const response = await authService.updateProfile({ skinReport: report });
       if (response.data.success) {
         updateUser(response.data.user);
-        showToast('Skin Report saved successfully! 💾', 'success');
+        await saveRoutinesToDatabase(report);
+        showToast('Skin Report and routines saved successfully! 💾', 'success');
       }
     } catch (err: any) {
       showToast(err.response?.data?.message || 'Failed to save skin report', 'error');
@@ -166,50 +106,50 @@ const SkinReportPage: React.FC = () => {
 
   const handleContinue = async () => {
     localStorage.setItem('glowcare_onboarding_completed', 'true');
-    if (!user?.skinReport) {
-      try {
-        const response = await authService.updateProfile({ skinReport: report });
-        if (response.data.success) {
-          updateUser(response.data.user);
-        }
-      } catch (err) {
-        console.error('Failed to auto-save skin report:', err);
+    try {
+      const response = await authService.updateProfile({ skinReport: report });
+      if (response.data.success) {
+        updateUser(response.data.user);
       }
+      await saveRoutinesToDatabase(report);
+    } catch (err) {
+      console.error('Failed to auto-save skin report and routines:', err);
     }
     navigate('/dashboard');
   };
 
   return (
-    <div
-      className="min-h-screen py-10 px-4 md:px-8"
-      style={{
-        background: isDark
-          ? 'radial-gradient(circle at 10% 20%, #1A1A2E 0%, #0F0F1A 100%)'
-          : 'linear-gradient(135deg, #FCE4EC 0%, #F3E5F5 50%, #FFF5F7 100%)'
-      }}
-    >
-      <div className="max-w-4xl mx-auto space-y-8">
+    <div className="min-h-screen py-10 px-4 md:px-8 relative overflow-hidden">
+      {/* Floating Background Blobs Layer */}
+      <div className="glow-bg-container">
+        <div className="blob blob-1"></div>
+        <div className="blob blob-2"></div>
+        <div className="blob blob-3"></div>
+        <div className="blob blob-4"></div>
+      </div>
+
+      <div className="max-w-4xl mx-auto space-y-8 relative z-10">
         
         {/* Header */}
         <div className="text-center space-y-2">
-          <h1 className="text-3xl md:text-4xl font-black gradient-text tracking-tight flex items-center justify-center gap-2">
-            ✨ Your Personalized Skin Report
+          <h1 className="text-3xl md:text-4xl font-black gradient-text tracking-tight flex items-center justify-center gap-2.5">
+            <Sparkles size={26} className="text-primary animate-pulse" /> Your Skin Diagnostic Report
           </h1>
           <p className="text-sm text-gray-500 max-w-lg mx-auto leading-relaxed">
-            Based on your responses, we've created a skincare profile to help you stay consistent.
+            We analyzed your skin metrics and compiled this customized skincare guide.
           </p>
         </div>
 
-        {/* Warnings & Reminders block */}
+        {/* Warnings */}
         {report.warnings && report.warnings.length > 0 && (
-          <div className="space-y-2.5">
+          <div className="space-y-3">
             {report.warnings.map((warn: string, i: number) => (
               <div
                 key={i}
-                className="glass-card p-4 flex items-start gap-3 border-l-4 border-l-amber-400"
-                style={{ background: 'rgba(255, 244, 229, 0.4)' }}
+                className="glass-card p-4.5 flex items-start gap-3 border-l-4 border-l-amber-400"
+                style={{ background: 'rgba(255, 244, 229, 0.5)' }}
               >
-                <FiAlertTriangle className="text-amber-500 mt-0.5 flex-shrink-0" />
+                <AlertTriangle className="text-amber-500 mt-0.5 flex-shrink-0" size={16} />
                 <p className="text-xs font-semibold text-amber-900 leading-relaxed">{warn}</p>
               </div>
             ))}
@@ -218,89 +158,95 @@ const SkinReportPage: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           
-          {/* COLUMN 1: Score & Diagnostics */}
+          {/* Left panel: Score & Metrics */}
           <div className="md:col-span-1 space-y-6">
             
-            {/* CARD 1: Skin Score */}
+            {/* Skin Score Ring */}
             <div className="glass-card p-6 text-center space-y-4">
-              <h3 className="font-bold text-xs uppercase tracking-wider text-gray-400">Overall Skin Score</h3>
-              <div className="relative w-36 h-36 mx-auto flex flex-col items-center justify-center rounded-full bg-lavender/10 border-4 border-dashed border-lavender animate-pulse">
-                <span className="text-4xl font-black gradient-text">{report.skinScore}</span>
-                <span className="text-[10px] text-gray-400 font-bold">/ 100</span>
+              <h3 className="font-extrabold text-[10px] uppercase tracking-wider text-gray-400">Skin Health Score</h3>
+              <div className="relative w-36 h-36 mx-auto flex flex-col items-center justify-center rounded-full bg-pink-50/50 border-2 border-dashed border-primary/40 shadow-inner">
+                <span className="text-5xl font-black gradient-text">{report.skinScore}</span>
+                <span className="text-[10px] text-gray-400 font-bold mt-1">/ 100</span>
               </div>
               <p className="text-xs text-gray-500 leading-relaxed font-semibold">
-                Your skin is healthy but can improve with consistency.
+                Your skin diagnostic baseline. Let's start tracking routines!
               </p>
             </div>
 
-            {/* CARD 2: Skin Summary */}
-            <div className="glass-card p-6 space-y-3">
-              <h3 className="font-bold text-xs border-b pb-2 uppercase tracking-wider text-gray-400">Skin Summary</h3>
-              <div className="space-y-2.5 text-xs">
+            {/* Diagnostics details */}
+            <div className="glass-card p-6 space-y-4">
+              <h3 className="font-extrabold text-[10px] border-b pb-2 uppercase tracking-wider text-gray-400 border-pink-100/50">Skin Diagnostics</h3>
+              <div className="space-y-3.5 text-xs">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-400 font-medium">Skin Type:</span>
-                  <span className="badge badge-lavender text-[10px] font-extrabold uppercase">{report.skinType}</span>
+                  <span className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">Skin Type:</span>
+                  <span className="badge badge-lavender text-[9px] font-black uppercase">{report.skinType}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-400 font-medium">Acne Level:</span>
-                  <span className={`badge text-[10px] font-extrabold uppercase ${
+                  <span className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">Acne:</span>
+                  <span className={`badge text-[9px] font-black uppercase ${
                     report.acneLevel === 'Severe' ? 'badge-danger' : report.acneLevel === 'Moderate' ? 'badge-warning' : 'badge-safe'
                   }`}>{report.acneLevel}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-400 font-medium">Oiliness:</span>
-                  <span className="badge badge-info text-[10px] font-extrabold uppercase">{report.oiliness}</span>
+                  <span className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">Pigmentation:</span>
+                  <span className={`badge text-[9px] font-black uppercase ${
+                    report.pigmentationLevel === 'Severe' ? 'badge-danger' : report.pigmentationLevel === 'Moderate' ? 'badge-warning' : 'badge-safe'
+                  }`}>{report.pigmentationLevel}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-400 font-medium">Pigmentation:</span>
-                  <span className="badge badge-warning text-[10px] font-extrabold uppercase">{report.pigmentationLevel}</span>
+                  <span className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">Dryness:</span>
+                  <span className={`badge text-[9px] font-black uppercase ${
+                    report.drynessLevel === 'Severe' ? 'badge-danger' : report.drynessLevel === 'Moderate' ? 'badge-warning' : 'badge-safe'
+                  }`}>{report.drynessLevel}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-400 font-medium">Hydration:</span>
-                  <span className={`badge text-[10px] font-extrabold uppercase ${
-                    report.hydration === 'Good' ? 'badge-safe' : 'badge-danger'
-                  }`}>{report.hydration}</span>
+                  <span className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">Oiliness:</span>
+                  <span className={`badge text-[9px] font-black uppercase ${
+                    report.oilinessLevel === 'Severe' ? 'badge-danger' : report.oilinessLevel === 'Moderate' ? 'badge-warning' : 'badge-safe'
+                  }`}>{report.oilinessLevel}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-400 font-medium">Sensitivity:</span>
-                  <span className="badge badge-lavender text-[10px] font-extrabold uppercase">{report.sensitivity}</span>
+                  <span className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">Sensitivity:</span>
+                  <span className="badge badge-lavender text-[9px] font-black uppercase">
+                    {report.isSensitive === 'Yes' ? 'Sensitive' : 'Resilient'}
+                  </span>
                 </div>
               </div>
             </div>
 
-            {/* CARD 3: Main Skin Concerns */}
-            <div className="glass-card p-6 space-y-3">
-              <h3 className="font-bold text-xs border-b pb-2 uppercase tracking-wider text-gray-400">Main Skin Concerns</h3>
-              <div className="flex flex-wrap gap-1.5">
-                {concerns.length > 0 ? (
-                  concerns.map((con, i) => (
-                    <span key={i} className="badge badge-lavender text-[10px] py-1 px-2.5 font-semibold">
-                      ✓ {con.charAt(0).toUpperCase() + con.slice(1).replace('_', ' ')}
-                    </span>
-                  ))
-                ) : (
-                  <span className="text-xs text-gray-400">No primary concerns selected</span>
-                )}
+            {/* Target & Concern */}
+            <div className="glass-card p-6 space-y-4">
+              <h3 className="font-extrabold text-[10px] border-b pb-2 uppercase tracking-wider text-gray-400 border-pink-100/50">Focus Areas</h3>
+              <div className="space-y-3.5">
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Main Concern</span>
+                  <span className="badge badge-lavender text-xs py-1.5 self-start font-bold">{report.mainConcern}</span>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Primary Goal</span>
+                  <span className="badge badge-safe text-xs py-1.5 self-start font-bold">{report.mainGoal}</span>
+                </div>
               </div>
             </div>
+
           </div>
 
-          {/* COLUMN 2: Recommendations, Habits & Goals */}
+          {/* Right panel: Recommendations */}
           <div className="md:col-span-2 space-y-6">
             
-            {/* CARD 4: Daily Recommendations */}
-            <div className="glass-card p-6 space-y-4">
-              <h3 className="font-bold text-sm flex items-center gap-1.5"><FiBookOpen className="text-lavender-dark" /> Daily Recommendations</h3>
+            {/* Daily Routines */}
+            <div className="glass-card p-6 space-y-5">
+              <h3 className="font-extrabold text-sm flex items-center gap-2"><BookOpen className="text-primary" size={16} /> Recommended Routine Steps</h3>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 {/* Morning */}
                 <div className="p-4 rounded-2xl bg-amber-50/40 border border-amber-100/50">
-                  <h4 className="font-bold text-xs text-amber-800 mb-3 flex items-center gap-1">☀️ Morning Routine</h4>
-                  <div className="space-y-2">
+                  <h4 className="font-extrabold text-xs text-amber-800 mb-3.5 flex items-center gap-1.5">☀️ Morning Steps</h4>
+                  <div className="space-y-2.5">
                     {report.generatedRoutine.morning.map((step: string, i: number) => (
-                      <div key={i} className="flex items-center gap-2 text-xs">
-                        <FiCheck className="text-amber-600 flex-shrink-0" />
-                        <span className="font-medium text-amber-900">{step}</span>
+                      <div key={i} className="flex items-start gap-2 text-xs">
+                        <Check className="text-amber-600 flex-shrink-0 mt-0.5" size={14} />
+                        <span className="font-semibold text-amber-950">{step}</span>
                       </div>
                     ))}
                   </div>
@@ -308,62 +254,104 @@ const SkinReportPage: React.FC = () => {
 
                 {/* Night */}
                 <div className="p-4 rounded-2xl bg-indigo-50/40 border border-indigo-100/50">
-                  <h4 className="font-bold text-xs text-indigo-800 mb-3 flex items-center gap-1">🌙 Night Routine</h4>
-                  <div className="space-y-2">
+                  <h4 className="font-extrabold text-xs text-indigo-800 mb-3.5 flex items-center gap-1.5">🌙 Night Steps</h4>
+                  <div className="space-y-2.5">
                     {report.generatedRoutine.night.map((step: string, i: number) => (
-                      <div key={i} className="flex items-center gap-2 text-xs">
-                        <FiCheck className="text-indigo-600 flex-shrink-0" />
-                        <span className="font-medium text-indigo-900">{step}</span>
+                      <div key={i} className="flex items-start gap-2 text-xs">
+                        <Check className="text-indigo-600 flex-shrink-0 mt-0.5" size={14} />
+                        <span className="font-semibold text-indigo-950">{step}</span>
                       </div>
                     ))}
                   </div>
                 </div>
               </div>
-
-              {/* Text suggestions list */}
-              {report.recommendations.length > 0 && (
-                <div className="mt-2 pt-2 border-t text-xs space-y-1 text-gray-500">
-                  {report.recommendations.map((rec: string, i: number) => (
-                    <p key={i}>• {rec}</p>
-                  ))}
-                </div>
-              )}
             </div>
 
-            {/* CARD 5: Healthy Habits */}
+            {/* Recommended Products */}
+            {report.recommendedProducts && report.recommendedProducts.length > 0 && (
+              <div className="glass-card p-6 space-y-5 text-left">
+                <h3 className="font-extrabold text-sm flex items-center gap-2 text-gray-700">
+                  <Sparkles className="text-primary" size={16} /> Recommended Skincare Products
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {report.recommendedProducts.map((prod: RecommendedProduct, i: number) => (
+                    <div key={i} className="p-4 rounded-2xl bg-white/50 border border-pink-100/30 flex flex-col justify-between space-y-3.5 shadow-sm hover:shadow-md transition-all">
+                      <div className="space-y-1.5">
+                        <div className="flex justify-between items-start gap-2">
+                          <h4 className="font-black text-xs text-gray-800 leading-tight">{prod.name}</h4>
+                          <span className="text-[9px] bg-pink-50 text-primary px-2.5 py-0.5 rounded-full font-black uppercase tracking-wider flex-shrink-0">{prod.brand}</span>
+                        </div>
+                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">{prod.category} • {prod.timeOfDay}</p>
+                        <div className="space-y-1 text-left">
+                          <p className="text-[10px] text-gray-500 font-bold leading-relaxed">
+                            <span className="text-gray-400 font-black">Actives:</span> {prod.ingredients}
+                          </p>
+                          <p className="text-[11px] text-gray-600 leading-relaxed italic">
+                            "{prod.whyRecommended}"
+                          </p>
+                        </div>
+                      </div>
+                      <div className="bg-pink-50/20 p-2.5 rounded-xl border border-pink-100/10 text-[10px] text-gray-500 leading-normal font-semibold">
+                        <span className="font-bold text-primary block uppercase tracking-wider text-[8px] mb-0.5">How to use:</span>
+                        {prod.howToUse}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Skincare Tips */}
+            {report.skincareTips && report.skincareTips.length > 0 && (
+              <div className="glass-card p-6 space-y-4 text-left">
+                <h3 className="font-extrabold text-sm flex items-center gap-2 text-gray-700">
+                  <Sparkles className="text-primary animate-pulse" size={16} /> Personalized Skincare Tips
+                </h3>
+                <div className="grid grid-cols-1 gap-2.5">
+                  {report.skincareTips.map((tip: string, i: number) => (
+                    <div key={i} className="flex items-start gap-2.5 text-xs text-gray-600">
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
+                      <span className="font-semibold leading-relaxed">{tip}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Daily Habits */}
             <div className="glass-card p-6 space-y-4">
-              <h3 className="font-bold text-sm flex items-center gap-1.5"><FiCheck className="text-mint-dark" /> Healthy Habits</h3>
+              <h3 className="font-extrabold text-sm flex items-center gap-2">🌿 Skin-Supportive Habits</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {report.healthyHabits.map((habit: string, i: number) => (
                   <div
                     key={i}
-                    className="p-3 rounded-2xl border flex items-center gap-2.5 text-xs font-semibold bg-white/40 border-gray-100"
+                    className="p-3.5 rounded-2xl border flex items-center gap-2 text-xs font-semibold bg-white/40 border-pink-100/30"
                   >
-                    <span>{habit}</span>
+                    {habit}
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* CARD 6: Weekly Goals progress indicators */}
+            {/* Weekly goals */}
             <div className="glass-card p-6 space-y-4">
-              <h3 className="font-bold text-sm flex items-center gap-1.5">📈 Weekly Skincare Goals</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-                <div className="p-3 rounded-xl bg-gray-50/50 dark:bg-dark-bg/20 space-y-1">
-                  <p className="text-[10px] text-gray-400 font-bold uppercase">Morning</p>
-                  <p className="font-black text-sm text-lavender-dark">{report.weeklyGoals.morningRoutine}</p>
+              <h3 className="font-extrabold text-sm">📈 Weekly Commitments</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 text-center">
+                <div className="p-3 rounded-2xl bg-pink-50/30 border border-pink-100/30">
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Morning</p>
+                  <p className="font-black text-sm text-primary mt-1">{report.weeklyGoals.morningRoutine}</p>
                 </div>
-                <div className="p-3 rounded-xl bg-gray-50/50 dark:bg-dark-bg/20 space-y-1">
-                  <p className="text-[10px] text-gray-400 font-bold uppercase">Night</p>
-                  <p className="font-black text-sm text-lavender-dark">{report.weeklyGoals.nightRoutine}</p>
+                <div className="p-3 rounded-2xl bg-pink-50/30 border border-pink-100/30">
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Night</p>
+                  <p className="font-black text-sm text-primary mt-1">{report.weeklyGoals.nightRoutine}</p>
                 </div>
-                <div className="p-3 rounded-xl bg-gray-50/50 dark:bg-dark-bg/20 space-y-1">
-                  <p className="text-[10px] text-gray-400 font-bold uppercase">Water 2L</p>
-                  <p className="font-black text-sm text-lavender-dark">{report.weeklyGoals.drinkWater}</p>
+                <div className="p-3 rounded-2xl bg-pink-50/30 border border-pink-100/30">
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Water Goal</p>
+                  <p className="font-black text-sm text-primary mt-1">{report.weeklyGoals.drinkWater}</p>
                 </div>
-                <div className="p-3 rounded-xl bg-gray-50/50 dark:bg-dark-bg/20 space-y-1">
-                  <p className="text-[10px] text-gray-400 font-bold uppercase">Sleep 8H</p>
-                  <p className="font-black text-sm text-lavender-dark">{report.weeklyGoals.sleepHours}</p>
+                <div className="p-3 rounded-2xl bg-pink-50/30 border border-pink-100/30">
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Sleep Goal</p>
+                  <p className="font-black text-sm text-primary mt-1">{report.weeklyGoals.sleepHours}</p>
                 </div>
               </div>
             </div>
@@ -371,21 +359,30 @@ const SkinReportPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Buttons */}
-        <div className="flex flex-col sm:flex-row gap-3 pt-4">
+        {/* Educational Disclaimer */}
+        {report.disclaimer && (
+          <div className="glass-card p-4.5 bg-red-50/10 border border-primary/20 text-left">
+            <p className="text-[11px] font-semibold text-gray-500 leading-relaxed">
+              <span className="font-black text-primary uppercase tracking-wider text-[9px] block mb-1">Medical Disclaimer</span>
+              {report.disclaimer}
+            </p>
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="flex flex-col sm:flex-row gap-3.5 pt-4">
           <button
             onClick={handleSaveReport}
             disabled={saving}
-            className="btn-secondary py-3 px-8 text-sm flex items-center justify-center gap-2 flex-1 shadow-md"
-            style={{ background: 'white' }}
+            className="btn-secondary py-3.5 px-8 text-xs font-bold flex items-center justify-center gap-2 flex-1 shadow-md bg-white border-none text-gray-700 hover:bg-gray-50 cursor-pointer"
           >
-            <FiSave /> {saving ? 'Saving Skincare Report...' : 'Save Report to Profile'}
+            <Save size={15} /> Save Report to Profile
           </button>
           <button
             onClick={handleContinue}
-            className="btn-primary py-3 px-8 text-sm flex items-center justify-center gap-2 flex-1 shadow-md"
+            className="btn-primary py-3.5 px-8 text-xs font-black flex items-center justify-center gap-2 flex-1 shadow-lg cursor-pointer"
           >
-            Continue to Dashboard <FiArrowRight />
+            Continue to Dashboard <ArrowRight size={15} />
           </button>
         </div>
 

@@ -3,6 +3,7 @@ import RoutineHistory from '../models/RoutineHistory';
 import JournalEntry from '../models/JournalEntry';
 import Photo from '../models/Photo';
 import Product from '../models/Product';
+import Wishlist from '../models/Wishlist';
 import { AuthRequest } from '../middleware/auth';
 
 // @desc    Get calendar events for a month
@@ -40,6 +41,12 @@ export const getCalendarEvents = async (req: AuthRequest, res: Response): Promis
       user: userId,
       expiryDate: { $gte: startDate, $lte: endDate },
     }).select('name expiryDate');
+
+    // Wishlist reminders
+    const wishlistReminders = await Wishlist.find({
+      user: userId,
+      reminderDate: { $gte: startDate, $lte: endDate },
+    });
 
     // Build events
     const events: any[] = [];
@@ -83,6 +90,18 @@ export const getCalendarEvents = async (req: AuthRequest, res: Response): Promis
         detail: 'Product expiry',
         id: p._id,
       });
+    });
+
+    wishlistReminders.forEach((w) => {
+      if (w.reminderDate) {
+        events.push({
+          date: w.reminderDate,
+          type: 'wishlist',
+          title: `💖 Wishlist: ${w.productName}`,
+          detail: `Priority: ${w.priority} | Price: $${w.price || 0}`,
+          id: w._id,
+        });
+      }
     });
 
     res.status(200).json({ success: true, data: events });

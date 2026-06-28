@@ -22,7 +22,6 @@ import ProductFormPage from './pages/products/ProductFormPage';
 import RoutineBuilderPage from './pages/RoutineBuilderPage';
 import JournalPage from './pages/JournalPage';
 import GalleryPage from './pages/GalleryPage';
-import CalendarPage from './pages/CalendarPage';
 import WishlistPage from './pages/WishlistPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import AchievementsPage from './pages/AchievementsPage';
@@ -117,7 +116,6 @@ const App: React.FC = () => {
               <Route path="/routines" element={<ProtectedRoute><RoutineBuilderPage /></ProtectedRoute>} />
               <Route path="/journal" element={<ProtectedRoute><JournalPage /></ProtectedRoute>} />
               <Route path="/gallery" element={<ProtectedRoute><GalleryPage /></ProtectedRoute>} />
-              <Route path="/calendar" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
               <Route path="/wishlist" element={<ProtectedRoute><WishlistPage /></ProtectedRoute>} />
               <Route path="/analytics" element={<ProtectedRoute><AnalyticsPage /></ProtectedRoute>} />
               <Route path="/achievements" element={<ProtectedRoute><AchievementsPage /></ProtectedRoute>} />

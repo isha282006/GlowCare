@@ -80,6 +80,7 @@ export const moveToInventory = async (req: AuthRequest, res: Response): Promise<
       category: item.category || 'Other',
       quantity: 100,
       purchaseDate: new Date(),
+      price: item.price || 0,
       notes: item.notes,
     });
 

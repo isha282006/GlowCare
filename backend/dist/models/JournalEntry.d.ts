@@ -9,6 +9,14 @@ export interface IJournalEntry extends Document {
     mood: string;
     notes: string;
     progressPhoto: string;
+    skinCondition: string;
+    acne: 'None' | 'Mild' | 'Moderate' | 'Severe';
+    dryness: 'None' | 'Mild' | 'Moderate' | 'Severe';
+    oiliness: 'None' | 'Mild' | 'Moderate' | 'Severe';
+    redness: 'None' | 'Mild' | 'Moderate' | 'Severe';
+    reaction: string;
+    rating: number;
+    images: string[];
     createdAt: Date;
 }
 declare const _default: mongoose.Model<IJournalEntry, {}, {}, {}, mongoose.Document<unknown, {}, IJournalEntry, {}, {}> & IJournalEntry & Required<{

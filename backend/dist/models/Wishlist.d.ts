@@ -6,6 +6,8 @@ export interface IWishlist extends Document {
     category: string;
     priority: 'low' | 'medium' | 'high';
     notes: string;
+    price: number;
+    reminderDate?: Date;
     createdAt: Date;
 }
 declare const _default: mongoose.Model<IWishlist, {}, {}, {}, mongoose.Document<unknown, {}, IWishlist, {}, {}> & IWishlist & Required<{

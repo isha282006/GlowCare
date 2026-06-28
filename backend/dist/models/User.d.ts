@@ -10,6 +10,7 @@ export interface IUser extends Document {
     createdAt: Date;
     skinReport?: any;
     onboardingCompleted: boolean;
+    hasInteractedWithInventory: boolean;
     comparePassword(candidatePassword: string): Promise<boolean>;
     getSignedJwtToken(): string;
 }

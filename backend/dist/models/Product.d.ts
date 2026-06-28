@@ -12,6 +12,8 @@ export interface IProduct extends Document {
     expiryDate: Date;
     image: string;
     notes: string;
+    price: number;
+    routineUsage: 'morning' | 'night' | 'both' | 'none';
     status: 'active' | 'expired' | 'expiring' | 'low';
     createdAt: Date;
 }

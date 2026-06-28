@@ -30,6 +30,8 @@ export interface Product {
   expiryDate: string;
   image: string;
   notes: string;
+  price?: number;
+  routineUsage?: 'morning' | 'night' | 'both' | 'none';
   status: 'active' | 'expired' | 'expiring' | 'low';
   createdAt: string;
 }
@@ -74,6 +76,14 @@ export interface JournalEntry {
   mood: 'Great' | 'Good' | 'Okay' | 'Bad' | 'Terrible';
   notes: string;
   progressPhoto: string;
+  skinCondition?: string;
+  acne?: 'None' | 'Mild' | 'Moderate' | 'Severe';
+  dryness?: 'None' | 'Mild' | 'Moderate' | 'Severe';
+  oiliness?: 'None' | 'Mild' | 'Moderate' | 'Severe';
+  redness?: 'None' | 'Mild' | 'Moderate' | 'Severe';
+  reaction?: string;
+  rating?: number;
+  images?: string[];
   createdAt: string;
 }
 
@@ -95,6 +105,8 @@ export interface WishlistItem {
   category: string;
   priority: 'low' | 'medium' | 'high';
   notes: string;
+  price?: number;
+  reminderDate?: string;
   createdAt: string;
 }
 

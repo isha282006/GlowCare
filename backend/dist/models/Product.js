@@ -87,6 +87,15 @@ const ProductSchema = new mongoose_1.Schema({
         type: String,
         default: '',
     },
+    price: {
+        type: Number,
+        default: 0,
+    },
+    routineUsage: {
+        type: String,
+        enum: ['morning', 'night', 'both', 'none'],
+        default: 'both',
+    },
     status: {
         type: String,
         enum: ['active', 'expired', 'expiring', 'low'],
