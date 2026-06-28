@@ -15,10 +15,20 @@ interface RegisterForm {
 
 const RegisterPage: React.FC = () => {
   const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm<RegisterForm>();
-  const { register: registerUser } = useAuth();
+  const { register: registerUser, user, token, loading } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+
+  React.useEffect(() => {
+    if (!loading && token) {
+      if (user?.onboardingCompleted) {
+        navigate('/dashboard', { replace: true });
+      } else {
+        navigate('/onboarding', { replace: true });
+      }
+    }
+  }, [token, user, loading, navigate]);
 
   const onSubmit = async (data: RegisterForm) => {
     try {

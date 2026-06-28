@@ -13,10 +13,20 @@ interface LoginForm {
 
 const LoginPage: React.FC = () => {
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginForm>();
-  const { login } = useAuth();
+  const { login, user, token, loading } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+
+  React.useEffect(() => {
+    if (!loading && token) {
+      if (user?.onboardingCompleted) {
+        navigate('/dashboard', { replace: true });
+      } else {
+        navigate('/onboarding', { replace: true });
+      }
+    }
+  }, [token, user, loading, navigate]);
 
   const onSubmit = async (data: LoginForm) => {
     try {
