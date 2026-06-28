@@ -433,70 +433,67 @@ const DashboardPage: React.FC = () => {
   })).reverse();
 
   return (
-    <div className="page-container max-w-5xl space-y-8 relative z-10">
+    <div className="page-container max-w-5xl space-y-12 relative z-10">
       
       {/* 1. HERO BANNER SECTION */}
-      <motion.div
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="glass-card p-8 border relative overflow-hidden shadow-sm"
-        style={{
-          background: 'linear-gradient(135deg, rgba(255,199,222,0.3) 0%, rgba(200,182,255,0.25) 100%)',
-          borderColor: 'rgba(255, 199, 222, 0.45)',
-          borderRadius: 24
-        }}
-      >
-        {/* Glow circles */}
-        <div className="absolute top-[-30%] right-[-10%] w-[35vw] h-[35vw] rounded-full bg-pink-100/35 blur-3xl pointer-events-none" />
-        <div className="absolute bottom-[-20%] left-[-5%] w-[25vw] h-[25vw] rounded-full bg-indigo-50/20 blur-3xl pointer-events-none" />
-        
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="text-left space-y-4 max-w-xl">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-              {user?.profilePhoto || user?.profilePicture ? (
-                <img
-                  src={(user.profilePhoto || user.profilePicture).startsWith('http')
-                    ? (user.profilePhoto || user.profilePicture)
-                    : `http://localhost:5000${user.profilePhoto || user.profilePicture}`}
-                  alt="Profile"
-                  className="w-16 h-16 rounded-full object-cover border-4 border-white/60 shadow-md flex-shrink-0"
-                />
-              ) : (
-                <div className="w-16 h-16 rounded-full bg-pink-50/50 flex items-center justify-center text-2xl border-4 border-white/60 shadow-md font-black flex-shrink-0">
-                  {user?.name?.charAt(0) || '👤'}
+      <div className="hero-glow-effect w-full">
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="hero-glass-card p-8 relative overflow-hidden"
+        >
+          {/* Glow circles */}
+          <div className="absolute top-[-30%] right-[-10%] w-[35vw] h-[35vw] rounded-full bg-pink-100/35 blur-3xl pointer-events-none" />
+          <div className="absolute bottom-[-20%] left-[-5%] w-[25vw] h-[25vw] rounded-full bg-indigo-50/20 blur-3xl pointer-events-none" />
+          
+          <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="text-left space-y-4 max-w-xl">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                {user?.profilePhoto || user?.profilePicture ? (
+                  <img
+                    src={(user.profilePhoto || user.profilePicture).startsWith('http')
+                      ? (user.profilePhoto || user.profilePicture)
+                      : `http://localhost:5000${user.profilePhoto || user.profilePicture}`}
+                    alt="Profile"
+                    className="w-16 h-16 rounded-full object-cover border-4 border-white/60 shadow-md flex-shrink-0"
+                  />
+                ) : (
+                  <div className="w-16 h-16 rounded-full bg-pink-50/50 flex items-center justify-center text-2xl border-4 border-white/60 shadow-md font-black flex-shrink-0">
+                    {user?.name?.charAt(0) || '👤'}
+                  </div>
+                )}
+                <div className="space-y-1">
+                  <h1 className="text-3xl md:text-4xl font-black tracking-tight text-gray-800">
+                    {getGreeting()}, {user?.name?.split(' ')[0]} 👋
+                  </h1>
+                  <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">
+                    ✨ {dailyTip.title} Tip of the day
+                  </p>
                 </div>
-              )}
-              <div className="space-y-1">
-                <h1 className="text-3xl md:text-4xl font-black tracking-tight text-gray-800">
-                  {getGreeting()}, {user?.name?.split(' ')[0]} 👋
-                </h1>
-                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">
-                  ✨ {dailyTip.title} Tip of the day
-                </p>
+              </div>
+              
+              <p className="text-sm text-gray-500 leading-relaxed italic">
+                "{dailyTip.text}"
+              </p>
+  
+              <div className="p-4 rounded-2xl bg-white/60 border border-white/60 text-xs text-primary font-bold shadow-sm inline-block">
+                📈 Your skin health consistency index has improved by 8% this week. Keep following your daily routine!
+              </div>
+  
+              <div className="pt-2">
+                <button 
+                  onClick={scrollToRoutine} 
+                  className="btn-primary py-3 px-6 text-xs shadow-md border-none cursor-pointer flex items-center gap-2 group"
+                >
+                  Start Today's Routine <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                </button>
               </div>
             </div>
             
-            <p className="text-sm text-gray-500 leading-relaxed italic">
-              "{dailyTip.text}"
-            </p>
-
-            <div className="p-4 rounded-2xl bg-white/60 border border-white/60 text-xs text-primary font-bold shadow-sm inline-block">
-              📈 Your skin health consistency index has improved by 8% this week. Keep following your daily routine!
-            </div>
-
-            <div className="pt-2">
-              <button 
-                onClick={scrollToRoutine} 
-                className="btn-primary py-3 px-6 text-xs shadow-md border-none cursor-pointer flex items-center gap-2 group"
-              >
-                Start Today's Routine <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-              </button>
-            </div>
+            <SkincareIllustration />
           </div>
-          
-          <SkincareIllustration />
-        </div>
-      </motion.div>
+        </motion.div>
+      </div>
 
       {/* 2. STATISTICS CARDS ROW */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
