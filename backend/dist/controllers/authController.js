@@ -29,6 +29,7 @@ const register = async (req, res) => {
                 profilePicture: user.profilePicture,
                 profilePhoto: user.profilePhoto,
                 progressPhotos: user.progressPhotos,
+                skinReport: user.skinReport,
             },
         });
     }
@@ -69,6 +70,7 @@ const login = async (req, res) => {
                 profilePhoto: user.profilePhoto,
                 progressPhotos: user.progressPhotos,
                 onboardingCompleted: user.onboardingCompleted,
+                skinReport: user.skinReport,
             },
         });
     }

@@ -29,6 +29,7 @@ export const register = async (req: AuthRequest, res: Response): Promise<void> =
         profilePicture: user.profilePicture,
         profilePhoto: user.profilePhoto,
         progressPhotos: user.progressPhotos,
+        skinReport: user.skinReport,
       },
     });
   } catch (error: any) {
@@ -73,6 +74,7 @@ export const login = async (req: AuthRequest, res: Response): Promise<void> => {
         profilePhoto: user.profilePhoto,
         progressPhotos: user.progressPhotos,
         onboardingCompleted: user.onboardingCompleted,
+        skinReport: user.skinReport,
       },
     });
   } catch (error: any) {
