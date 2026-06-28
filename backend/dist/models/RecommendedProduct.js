@@ -84,7 +84,8 @@ const RecommendedProductSchema = new mongoose_1.Schema({
         default: '',
     },
 });
-RecommendedProductSchema.index({ skinTypes: 1, skinConcerns: 1 });
-RecommendedProductSchema.index({ category: 1, skinTypes: 1 });
+RecommendedProductSchema.index({ skinTypes: 1 });
+RecommendedProductSchema.index({ skinConcerns: 1 });
+RecommendedProductSchema.index({ category: 1 });
 exports.default = mongoose_1.default.model('RecommendedProduct', RecommendedProductSchema);
 //# sourceMappingURL=RecommendedProduct.js.map

@@ -64,7 +64,8 @@ const RecommendedProductSchema = new Schema<IRecommendedProduct>({
   },
 });
 
-RecommendedProductSchema.index({ skinTypes: 1, skinConcerns: 1 });
-RecommendedProductSchema.index({ category: 1, skinTypes: 1 });
+RecommendedProductSchema.index({ skinTypes: 1 });
+RecommendedProductSchema.index({ skinConcerns: 1 });
+RecommendedProductSchema.index({ category: 1 });
 
 export default mongoose.model<IRecommendedProduct>('RecommendedProduct', RecommendedProductSchema);

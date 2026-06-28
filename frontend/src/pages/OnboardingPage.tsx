@@ -215,12 +215,34 @@ const OnboardingPage: React.FC<OnboardingPageProps> = ({ step }) => {
   };
 
   const handleFinish = async () => {
+    console.log("Button clicked");
+    console.log("Submitting questionnaire");
+    console.log("Validating fields...");
+
+    // Validate fields
+    if (!selectedSkinType) {
+      console.error("Validation error: Skin type is required");
+      showToast("Please select your skin type!", "error");
+      return;
+    }
+    if (!selectedConcerns || selectedConcerns.length === 0) {
+      console.error("Validation error: At least one skin concern is required");
+      showToast("Please select at least one skin concern!", "error");
+      return;
+    }
+    if (!lifestyle.waterIntake || !lifestyle.sleepDuration || !lifestyle.sunscreenUsage) {
+      console.error("Validation error: Lifestyle habits are incomplete");
+      showToast("Please complete all lifestyle questionnaire fields!", "error");
+      return;
+    }
+
     setIsSaving(true);
     try {
       let selfieUrl = '';
 
       // 1. Upload baseline photo
       if (capturedImage && capturedImage.startsWith('data:')) {
+        console.log("Uploading baseline photo...");
         try {
           const blob = dataURLtoBlob(capturedImage);
           const file = new File([blob], 'baseline_selfie.jpg', { type: 'image/jpeg' });
@@ -232,18 +254,29 @@ const OnboardingPage: React.FC<OnboardingPageProps> = ({ step }) => {
           const uploadRes = await uploadService.uploadProgressPhoto(formData);
           if (uploadRes.data?.success) {
             selfieUrl = uploadRes.data.imageUrl;
+            console.log("Baseline photo uploaded successfully, URL:", selfieUrl);
           }
         } catch (imgErr) {
           console.error('Failed to upload baseline selfie:', imgErr);
         }
       }
 
+      // Normalize skinType to Capitalized form (e.g. oily -> Oily)
+      const normalizedSkinType = selectedSkinType.charAt(0).toUpperCase() + selectedSkinType.slice(1).toLowerCase();
+
       // 2. Generate Assessment Report via Backend API
+      console.log("Sending request...");
       const recResponse = await recommendationService.generate({
-        skinType: selectedSkinType || 'Normal',
+        skinType: normalizedSkinType,
         concerns: selectedConcerns,
         lifestyle: lifestyle
       });
+
+      console.log("API response:", recResponse);
+
+      if (!recResponse.data?.success) {
+        throw new Error(recResponse.data?.message || "Failed to generate recommendation report");
+      }
 
       const calculatedReport: any = recResponse.data.data;
 
@@ -251,13 +284,16 @@ const OnboardingPage: React.FC<OnboardingPageProps> = ({ step }) => {
       calculatedReport.selfieImage = selfieUrl;
 
       // 3. Save report to User profile
+      console.log("Saving user profile to database...");
       const response = await authService.updateProfile({
         skinReport: calculatedReport,
-        skinType: selectedSkinType || 'Normal',
+        skinType: normalizedSkinType,
         skinConcerns: selectedConcerns,
         skinScore: calculatedReport.assessment?.skinScore || 80,
         onboardingCompleted: true
       });
+
+      console.log("Profile update API response:", response);
 
       if (response.data.success) {
         updateUser(response.data.user);
@@ -267,10 +303,15 @@ const OnboardingPage: React.FC<OnboardingPageProps> = ({ step }) => {
         localStorage.removeItem('glowcare_onboarding_last_path');
         
         showToast('Skin Report generated successfully! 🌟', 'success');
-        navigate('/onboarding/report');
+        console.log("Onboarding process completed successfully, redirecting...");
+        navigate('/skin-report');
+      } else {
+        throw new Error(response.data?.message || "Failed to save profile onboarding");
       }
     } catch (err: any) {
-      showToast(err.response?.data?.message || 'Failed to complete profile onboarding', 'error');
+      console.error("Onboarding submission failed:", err);
+      const errorMsg = err.response?.data?.message || err.message || 'Failed to complete profile onboarding';
+      showToast(errorMsg, 'error');
     } finally {
       setIsSaving(false);
     }

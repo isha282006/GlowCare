@@ -304,7 +304,7 @@ function generateWeeklyCare(products, skinType, concerns) {
 // @route   POST /api/recommendations/generate
 const generateRecommendation = async (req, res) => {
     try {
-        const { skinType, concerns, lifestyle } = req.body;
+        let { skinType, concerns, lifestyle } = req.body;
         if (!skinType || !concerns || !Array.isArray(concerns)) {
             res.status(400).json({
                 success: false,
@@ -312,6 +312,8 @@ const generateRecommendation = async (req, res) => {
             });
             return;
         }
+        // Normalize skinType to capitalized form (e.g. oily -> Oily)
+        skinType = skinType.charAt(0).toUpperCase() + skinType.slice(1).toLowerCase();
         // 1. Fetch all products from database
         const allProducts = await RecommendedProduct_1.default.find({});
         if (allProducts.length === 0) {

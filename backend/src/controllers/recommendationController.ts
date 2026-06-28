@@ -329,7 +329,7 @@ function generateWeeklyCare(
 // @route   POST /api/recommendations/generate
 export const generateRecommendation = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { skinType, concerns, lifestyle } = req.body;
+    let { skinType, concerns, lifestyle } = req.body;
 
     if (!skinType || !concerns || !Array.isArray(concerns)) {
       res.status(400).json({
@@ -338,6 +338,9 @@ export const generateRecommendation = async (req: AuthRequest, res: Response): P
       });
       return;
     }
+
+    // Normalize skinType to capitalized form (e.g. oily -> Oily)
+    skinType = skinType.charAt(0).toUpperCase() + skinType.slice(1).toLowerCase();
 
     // 1. Fetch all products from database
     const allProducts = await RecommendedProduct.find({});

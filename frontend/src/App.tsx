@@ -59,7 +59,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
       return <Navigate to="/dashboard" replace />;
     }
   } else {
-    if (!location.pathname.startsWith('/onboarding')) {
+    if (!location.pathname.startsWith('/onboarding') && location.pathname !== '/skin-report') {
       const lastUnfinishedPath = localStorage.getItem('glowcare_onboarding_last_path') || '/onboarding';
       return <Navigate to={lastUnfinishedPath} replace />;
     }
@@ -110,6 +110,7 @@ const App: React.FC = () => {
               <Route path="/onboarding/camera" element={<ProtectedRoute><OnboardingPage step="camera" /></ProtectedRoute>} />
               <Route path="/onboarding/questionnaire" element={<ProtectedRoute><OnboardingPage step="questionnaire" /></ProtectedRoute>} />
               <Route path="/onboarding/report" element={<ProtectedRoute><SkinReportPage /></ProtectedRoute>} />
+              <Route path="/skin-report" element={<ProtectedRoute><SkinReportPage /></ProtectedRoute>} />
               <Route path="/inventory" element={<ProtectedRoute><InventoryPage /></ProtectedRoute>} />
               <Route path="/inventory/add" element={<ProtectedRoute><ProductFormPage /></ProtectedRoute>} />
               <Route path="/inventory/edit/:id" element={<ProtectedRoute><ProductFormPage /></ProtectedRoute>} />
