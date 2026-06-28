@@ -4,8 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, ArrowLeft, Check, Upload, RotateCcw, Camera, Sparkles } from 'lucide-react';
 import { useToast } from '../contexts/ToastContext';
 import { useAuth } from '../contexts/AuthContext';
-import { authService, uploadService } from '../api/services';
-import { generateSmartAssessment } from '../utils/recommendationEngine';
+import { authService, uploadService, recommendationService } from '../api/services';
 
 interface OnboardingPageProps {
   step: 'welcome' | 'camera' | 'questionnaire';
@@ -239,12 +238,14 @@ const OnboardingPage: React.FC<OnboardingPageProps> = ({ step }) => {
         }
       }
 
-      // 2. Generate Assessment Report
-      const calculatedReport: any = generateSmartAssessment({
-        skinType: selectedSkinType || 'normal',
+      // 2. Generate Assessment Report via Backend API
+      const recResponse = await recommendationService.generate({
+        skinType: selectedSkinType || 'Normal',
         concerns: selectedConcerns,
         lifestyle: lifestyle
       });
+
+      const calculatedReport: any = recResponse.data.data;
 
       // Save selfie image inside report data
       calculatedReport.selfieImage = selfieUrl;
@@ -252,6 +253,9 @@ const OnboardingPage: React.FC<OnboardingPageProps> = ({ step }) => {
       // 3. Save report to User profile
       const response = await authService.updateProfile({
         skinReport: calculatedReport,
+        skinType: selectedSkinType || 'Normal',
+        skinConcerns: selectedConcerns,
+        skinScore: calculatedReport.assessment?.skinScore || 80,
         onboardingCompleted: true
       });
 

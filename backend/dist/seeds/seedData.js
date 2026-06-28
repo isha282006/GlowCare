@@ -10,6 +10,8 @@ const Category_1 = __importDefault(require("../models/Category"));
 const Ingredient_1 = __importDefault(require("../models/Ingredient"));
 const CompatibilityRule_1 = __importDefault(require("../models/CompatibilityRule"));
 const User_1 = __importDefault(require("../models/User"));
+const RecommendedProduct_1 = __importDefault(require("../models/RecommendedProduct"));
+const seedProducts_1 = require("./seedProducts");
 dotenv_1.default.config({ path: path_1.default.join(__dirname, '../../.env') });
 const categories = [
     { name: 'Cleanser', icon: '🧼', description: 'Facial cleansers and wash products' },
@@ -153,6 +155,10 @@ const seedDatabaseInline = async () => {
         console.log('Ingredients seeded');
         await CompatibilityRule_1.default.insertMany(compatibilityRules);
         console.log('Compatibility rules seeded');
+        // Seed recommended products
+        await RecommendedProduct_1.default.deleteMany({});
+        await RecommendedProduct_1.default.insertMany(seedProducts_1.recommendedProducts);
+        console.log(`Recommended products seeded (${seedProducts_1.recommendedProducts.length} products)`);
         // Create admin user if not exists
         const adminExists = await User_1.default.findOne({ role: 'admin' });
         if (!adminExists) {

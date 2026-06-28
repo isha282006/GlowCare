@@ -23,6 +23,7 @@ import calendarRoutes from './routes/calendarRoutes';
 import dataRoutes from './routes/dataRoutes';
 import uploadRoutes from './routes/uploadRoutes';
 import profileRoutes from './routes/profileRoutes';
+import recommendationRoutes from './routes/recommendationRoutes';
 
 dotenv.config();
 
@@ -76,6 +77,7 @@ app.use('/api/calendar', calendarRoutes);
 app.use('/api/data', dataRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/profile', profileRoutes);
+app.use('/api/recommendations', recommendationRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

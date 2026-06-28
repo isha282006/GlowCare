@@ -12,13 +12,11 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
-import { analyticsService, routineService, photoService, productService, journalService, authService } from '../api/services';
+import { analyticsService, routineService, photoService, productService, journalService, authService, recommendationService } from '../api/services';
 import AvatarManager from '../components/AvatarManager';
 import { BACKEND_URL } from '../api/axios';
 import { LoadingSkeleton } from '../components/ui';
 import type { DashboardStats, WeeklyActivity, Routine, Product, JournalEntry, Photo } from '../types';
-import { generateRoutineSteps, productDatabase } from '../utils/recommendationEngine';
-import type { RecommendedProduct } from '../utils/recommendationEngine';
 
 const COLORS = ['#FFC7DE', '#E8DBFF', '#D8F3DC', '#CAF0F8', '#FFD6E7', '#F472B6'];
 
@@ -193,63 +191,64 @@ const DashboardPage: React.FC = () => {
     setRegenerating(true);
     try {
       const r = user.skinReport;
-      let morningSteps = [];
-      let nightSteps = [];
+      let morningSteps: any[] = [];
+      let nightSteps: any[] = [];
 
-      if (r.routine) {
-        morningSteps = r.routine.morning.map((step: any) => ({
-          order: step.order,
-          stepType: step.category || step.stepType,
-          productName: `${step.brand} ${step.name || step.productName}`,
-          completed: false
-        }));
+      // Try using the backend API to regenerate
+      try {
+        const skinType = r.assessment?.skinType || user.skinType || 'Normal';
+        const concerns = r.assessment?.primaryConcerns || user.skinConcerns || [];
+        
+        const recResponse = await recommendationService.generate({
+          skinType,
+          concerns,
+          lifestyle: {}
+        });
+        
+        const newReport = recResponse.data.data;
+        
+        // Update skinReport with new data
+        await authService.updateProfile({ skinReport: newReport });
+        updateUser({ ...user, skinReport: newReport });
 
-        nightSteps = r.routine.night.map((step: any) => ({
-          order: step.order,
-          stepType: step.category === 'Eye Care' ? 'Eye Cream' : step.category === 'Lip Care' ? 'Lip Balm' : (step.category || step.stepType),
-          productName: `${step.brand} ${step.name || step.productName}`,
-          completed: false
-        }));
-      } else {
-        const dryVal = r.drynessLevel || 'None';
-        const oilVal = r.oilinessLevel || 'None';
-        const acneVal = r.acneLevel || 'None';
-        const pigVal = r.pigmentationLevel || 'None';
-        const dcVal = r.darkCircles || 'None';
-        const sensVal = r.isSensitive || 'No';
-
-        const { morning, night } = generateRoutineSteps(
-          r.skinType.toLowerCase(),
-          acneVal === 'None' ? 'No' : 'Yes',
-          pigVal === 'None' ? 'No' : 'Yes',
-          r.mainConcern === 'pigmentation' || r.mainConcern === 'dark_spots' ? 'Yes' : 'No',
-          r.mainConcern === 'lip_pigmentation' ? 'Yes' : 'No',
-          dcVal === 'None' ? 'No' : 'Yes',
-          r.mainConcern === 'fine_lines' ? 'Yes' : 'No',
-          dryVal,
-          oilVal,
-          sensVal
-        );
-
-        morningSteps = morning.map(step => ({
+        morningSteps = (newReport.routine?.morning || []).map((step: any) => ({
           order: step.order,
           stepType: step.category,
           productName: `${step.brand} ${step.name}`,
           completed: false
         }));
 
-        nightSteps = night.map(step => ({
+        nightSteps = (newReport.routine?.night || []).map((step: any) => ({
           order: step.order,
           stepType: step.category === 'Eye Care' ? 'Eye Cream' : step.category === 'Lip Care' ? 'Lip Balm' : step.category,
           productName: `${step.brand} ${step.name}`,
           completed: false
         }));
+      } catch (apiErr) {
+        // Fallback: use existing routine data from skinReport
+        console.warn('Backend regeneration failed, using existing report data:', apiErr);
+        if (r.routine) {
+          morningSteps = (r.routine.morning || []).map((step: any) => ({
+            order: step.order,
+            stepType: step.category || step.stepType,
+            productName: `${step.brand || ''} ${step.name || step.productName || ''}`.trim(),
+            completed: false
+          }));
+          nightSteps = (r.routine.night || []).map((step: any) => ({
+            order: step.order,
+            stepType: step.category === 'Eye Care' ? 'Eye Cream' : step.category === 'Lip Care' ? 'Lip Balm' : (step.category || step.stepType),
+            productName: `${step.brand || ''} ${step.name || step.productName || ''}`.trim(),
+            completed: false
+          }));
+        }
       }
 
-      await Promise.all([
-        routineService.create({ type: 'morning', steps: morningSteps }),
-        routineService.create({ type: 'night', steps: nightSteps })
-      ]);
+      if (morningSteps.length > 0 || nightSteps.length > 0) {
+        await Promise.all([
+          routineService.create({ type: 'morning', steps: morningSteps }),
+          routineService.create({ type: 'night', steps: nightSteps })
+        ]);
+      }
 
       await fetchDashboardData();
       showToast('Skincare routine regenerated successfully! 🔄', 'success');
@@ -891,10 +890,24 @@ const DashboardPage: React.FC = () => {
             <div className="relative pl-6 border-l-2 border-dashed border-pink-200/50 space-y-8 ml-3 py-2">
               {currentChecklistRoutine.steps.map((step) => {
                 const pName = step.productName || '';
-                const dbProduct = productDatabase.find(p => {
+                // Look up product details from the user's saved skinReport instead of local DB
+                const allProducts: any[] = user?.skinReport?.recommendations?.products || [];
+                const routineProducts: any[] = [
+                  ...(user?.skinReport?.routine?.morning || []),
+                  ...(user?.skinReport?.routine?.night || [])
+                ];
+                // First check routine steps (they have full product data from the backend)
+                const routineMatch = routineProducts.find((p: any) => {
                   const fullName = `${p.brand} ${p.name}`.toLowerCase();
                   return fullName.includes(pName.toLowerCase()) || pName.toLowerCase().includes(fullName);
-                }) || productDatabase.find(p => pName.toLowerCase().includes(p.name.toLowerCase()));
+                });
+                // Then check recommended products list
+                const recMatch = allProducts.find((p: any) => {
+                  const fullName = `${p.brand} ${p.name}`.toLowerCase();
+                  return fullName.includes(pName.toLowerCase()) || pName.toLowerCase().includes(fullName);
+                }) || allProducts.find((p: any) => pName.toLowerCase().includes(p.name.toLowerCase()));
+                
+                const dbProduct = routineMatch || recMatch;
 
                 const estTime = step.stepType.toLowerCase().includes('cleanser') ? '1 Min' 
                             : step.stepType.toLowerCase().includes('serum') ? '2 Mins'
@@ -902,7 +915,9 @@ const DashboardPage: React.FC = () => {
                             : '1 Min';
 
                 const isEditing = editingStepId === step._id;
-                const matchedCategoryProducts = dbProduct ? productDatabase.filter(p => p.category.toLowerCase().includes(dbProduct.category.toLowerCase().split(' ')[0])) : productDatabase;
+                const matchedCategoryProducts = dbProduct 
+                  ? allProducts.filter((p: any) => (p.category || '').toLowerCase().includes((dbProduct.category || '').toLowerCase().split(' ')[0])) 
+                  : allProducts;
 
                 return (
                   <div key={step._id} className="relative group">
@@ -946,7 +961,7 @@ const DashboardPage: React.FC = () => {
                                 defaultValue={step.productName}
                               >
                                 <option value="" disabled>Choose a product</option>
-                                {matchedCategoryProducts.map((p, idx) => (
+                                {matchedCategoryProducts.map((p: any, idx: number) => (
                                   <option key={idx} value={`${p.brand} ${p.name}`}>
                                     [{p.brand}] {p.name}
                                   </option>
@@ -1099,7 +1114,7 @@ const DashboardPage: React.FC = () => {
               <div className="space-y-3.5">
                 <h4 className="font-extrabold text-xs text-gray-700 uppercase tracking-wider">Suggested Branded Products</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  {user.skinReport.recommendedProducts.map((prod: RecommendedProduct, i: number) => (
+                  {user.skinReport.recommendedProducts.map((prod: any, i: number) => (
                     <div key={i} className="p-4 rounded-2xl bg-white/40 border border-pink-100/20 flex flex-col justify-between space-y-3 shadow-sm hover:shadow-md transition-all">
                       <div className="space-y-1.5">
                         <div className="flex justify-between items-start gap-1">

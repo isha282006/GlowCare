@@ -27,6 +27,7 @@ const calendarRoutes_1 = __importDefault(require("./routes/calendarRoutes"));
 const dataRoutes_1 = __importDefault(require("./routes/dataRoutes"));
 const uploadRoutes_1 = __importDefault(require("./routes/uploadRoutes"));
 const profileRoutes_1 = __importDefault(require("./routes/profileRoutes"));
+const recommendationRoutes_1 = __importDefault(require("./routes/recommendationRoutes"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 5000;
@@ -70,6 +71,7 @@ app.use('/api/calendar', calendarRoutes_1.default);
 app.use('/api/data', dataRoutes_1.default);
 app.use('/api/upload', uploadRoutes_1.default);
 app.use('/api/profile', profileRoutes_1.default);
+app.use('/api/recommendations', recommendationRoutes_1.default);
 // Health check
 app.get('/api/health', (req, res) => {
     res.status(200).json({ success: true, message: 'GlowCare API is running' });

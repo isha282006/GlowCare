@@ -178,3 +178,13 @@ export const dataService = {
   exportData: () => api.get('/data/export'),
   importData: (data: any) => api.post('/data/import', data),
 };
+
+// Recommendation Services
+export const recommendationService = {
+  generate: (data: { skinType: string; concerns: string[]; lifestyle: any }) =>
+    api.post('/recommendations/generate', data),
+  getProducts: () =>
+    api.get('/recommendations/products'),
+  getMatched: (skinType: string, concerns: string[]) =>
+    api.get('/recommendations/match', { params: { skinType, concerns: concerns.join(',') } }),
+};

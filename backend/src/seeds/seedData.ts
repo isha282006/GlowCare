@@ -5,6 +5,8 @@ import Category from '../models/Category';
 import Ingredient from '../models/Ingredient';
 import CompatibilityRule from '../models/CompatibilityRule';
 import User from '../models/User';
+import RecommendedProduct from '../models/RecommendedProduct';
+import { recommendedProducts } from './seedProducts';
 
 dotenv.config({ path: path.join(__dirname, '../../.env') });
 
@@ -156,6 +158,11 @@ export const seedDatabaseInline = async (): Promise<void> => {
 
     await CompatibilityRule.insertMany(compatibilityRules);
     console.log('Compatibility rules seeded');
+
+    // Seed recommended products
+    await RecommendedProduct.deleteMany({});
+    await RecommendedProduct.insertMany(recommendedProducts);
+    console.log(`Recommended products seeded (${recommendedProducts.length} products)`);
 
     // Create admin user if not exists
     const adminExists = await User.findOne({ role: 'admin' });
