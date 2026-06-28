@@ -21,6 +21,14 @@ export const authService = {
   logout: () => api.post('/auth/logout'),
 };
 
+// Upload Services
+export const uploadService = {
+  uploadProfilePhoto: (formData: FormData) =>
+    api.post('/upload/profile-photo', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  uploadProgressPhoto: (formData: FormData) =>
+    api.post('/upload/progress-photo', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+};
+
 // Product Services
 export const productService = {
   getAll: (params?: Record<string, string>) =>

@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { User, Lock, Upload } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
-import { authService } from '../api/services';
+import { authService, uploadService } from '../api/services';
 
 interface ProfileFormData {
   name: string;
@@ -20,8 +20,9 @@ const ProfilePage: React.FC = () => {
   const { user, updateUser } = useAuth();
   const { showToast } = useToast();
 
+  const profilePicUrl = user?.profilePhoto || user?.profilePicture;
   const [avatarPreview, setAvatarPreview] = useState<string | null>(
-    user?.profilePicture ? `http://localhost:5000${user.profilePicture}` : null
+    profilePicUrl ? (profilePicUrl.startsWith('http') ? profilePicUrl : `http://localhost:5000${profilePicUrl}`) : null
   );
 
   const { register: regProfile, handleSubmit: handleProfileSubmit, formState: { isSubmitting: isSubmittingProfile } } = useForm<ProfileFormData>({
@@ -50,9 +51,11 @@ const ProfilePage: React.FC = () => {
   const uploadAvatar = async (file: File) => {
     try {
       const formData = new FormData();
-      formData.append('profilePicture', file);
-      const res = await authService.uploadProfilePicture(formData);
+      formData.append('image', file);
+      const res = await uploadService.uploadProfilePhoto(formData);
       updateUser(res.data.user);
+      const newPic = res.data.imageUrl;
+      setAvatarPreview(newPic.startsWith('http') ? newPic : `http://localhost:5000${newPic}`);
       showToast('Profile picture updated successfully! 📸', 'success');
     } catch {
       showToast('Failed to upload profile picture', 'error');

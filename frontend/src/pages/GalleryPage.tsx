@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Plus, Trash2, Camera, LayoutGrid, Maximize2, Download, Upload, Calendar } from 'lucide-react';
-import { photoService } from '../api/services';
+import { photoService, uploadService } from '../api/services';
 import { useToast } from '../contexts/ToastContext';
 import { LoadingSkeleton, Modal, EmptyState } from '../components/ui';
 import type { Photo } from '../types';
@@ -130,7 +130,7 @@ const GalleryPage: React.FC = () => {
       formData.append('date', date);
       formData.append('notes', notes);
 
-      await photoService.upload(formData);
+      await uploadService.uploadProgressPhoto(formData);
       showToast('Photo uploaded to timeline! 📸', 'success');
       setIsUploadOpen(false);
       

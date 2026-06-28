@@ -27,6 +27,8 @@ export const register = async (req: AuthRequest, res: Response): Promise<void> =
         email: user.email,
         role: user.role,
         profilePicture: user.profilePicture,
+        profilePhoto: user.profilePhoto,
+        progressPhotos: user.progressPhotos,
       },
     });
   } catch (error: any) {
@@ -68,6 +70,8 @@ export const login = async (req: AuthRequest, res: Response): Promise<void> => {
         email: user.email,
         role: user.role,
         profilePicture: user.profilePicture,
+        profilePhoto: user.profilePhoto,
+        progressPhotos: user.progressPhotos,
         onboardingCompleted: user.onboardingCompleted,
       },
     });
@@ -89,6 +93,8 @@ export const getMe = async (req: AuthRequest, res: Response): Promise<void> => {
         email: user!.email,
         role: user!.role,
         profilePicture: user!.profilePicture,
+        profilePhoto: user!.profilePhoto,
+        progressPhotos: user!.progressPhotos,
         createdAt: user!.createdAt,
         skinReport: user!.skinReport,
         onboardingCompleted: user!.onboardingCompleted,
@@ -126,6 +132,8 @@ export const updateProfile = async (req: AuthRequest, res: Response): Promise<vo
         email: user.email,
         role: user.role,
         profilePicture: user.profilePicture,
+        profilePhoto: user.profilePhoto,
+        progressPhotos: user.progressPhotos,
         skinReport: user.skinReport,
         onboardingCompleted: user.onboardingCompleted,
       },

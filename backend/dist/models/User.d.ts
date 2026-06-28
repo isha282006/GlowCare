@@ -5,6 +5,8 @@ export interface IUser extends Document {
     password: string;
     role: 'user' | 'admin';
     profilePicture: string;
+    profilePhoto?: string;
+    progressPhotos?: string[];
     resetPasswordToken?: string;
     resetPasswordExpire?: Date;
     createdAt: Date;

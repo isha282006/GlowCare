@@ -8,6 +8,8 @@ export interface IUser extends Document {
   password: string;
   role: 'user' | 'admin';
   profilePicture: string;
+  profilePhoto?: string;
+  progressPhotos?: string[];
   resetPasswordToken?: string;
   resetPasswordExpire?: Date;
   createdAt: Date;
@@ -46,6 +48,14 @@ const UserSchema = new Schema<IUser>({
   profilePicture: {
     type: String,
     default: '',
+  },
+  profilePhoto: {
+    type: String,
+    default: '',
+  },
+  progressPhotos: {
+    type: [String],
+    default: [],
   },
   resetPasswordToken: String,
   resetPasswordExpire: Date,

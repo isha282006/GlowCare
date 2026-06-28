@@ -68,6 +68,14 @@ const UserSchema = new mongoose_1.Schema({
         type: String,
         default: '',
     },
+    profilePhoto: {
+        type: String,
+        default: '',
+    },
+    progressPhotos: {
+        type: [String],
+        default: [],
+    },
     resetPasswordToken: String,
     resetPasswordExpire: Date,
     skinReport: {

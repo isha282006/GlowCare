@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, ArrowLeft, Check, Upload, RotateCcw, Camera, Sparkles } from 'lucide-react';
 import { useToast } from '../contexts/ToastContext';
 import { useAuth } from '../contexts/AuthContext';
-import { photoService, authService } from '../api/services';
+import { authService, uploadService } from '../api/services';
 import { generateSkinRecommendations } from '../utils/recommendationEngine';
 
 interface OnboardingPageProps {
@@ -270,7 +270,7 @@ const OnboardingPage: React.FC<OnboardingPageProps> = ({ step }) => {
           formData.append('category', 'before');
           formData.append('date', new Date().toISOString().split('T')[0]);
           formData.append('notes', 'Baseline Selfie (Onboarding)');
-          await photoService.upload(formData);
+          await uploadService.uploadProgressPhoto(formData);
         } catch (imgErr) {
           console.error('Failed to upload baseline selfie:', imgErr);
         }

@@ -14,7 +14,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { analyticsService, routineService, photoService, productService, journalService, authService } from '../api/services';
 import { LoadingSkeleton } from '../components/ui';
-import type { DashboardStats, WeeklyActivity, Routine, Product, JournalEntry } from '../types';
+import type { DashboardStats, WeeklyActivity, Routine, Product, JournalEntry, Photo } from '../types';
 import { generateRoutineSteps, productDatabase } from '../utils/recommendationEngine';
 import type { RecommendedProduct } from '../utils/recommendationEngine';
 
@@ -120,6 +120,7 @@ const DashboardPage: React.FC = () => {
   const [weekly, setWeekly] = useState<WeeklyActivity[]>([]);
   const [routines, setRoutines] = useState<Routine[]>([]);
   const [latestPhoto, setLatestPhoto] = useState<string | null>(null);
+  const [progressPhotos, setProgressPhotos] = useState<Photo[]>([]);
   const [productsOwnedCount, setProductsOwnedCount] = useState(0);
   const [expiringProducts, setExpiringProducts] = useState<Product[]>([]);
   const [nextExpiringProduct, setNextExpiringProduct] = useState<string | null>(null);
@@ -257,9 +258,12 @@ const DashboardPage: React.FC = () => {
       setRoutines(routinesRes.data.data);
       setRecentEntries(journalRes.data.data);
       
-      if (photosRes.data?.data?.length > 0) {
+      if (photosRes.data?.data) {
         const sortedPhotos = [...photosRes.data.data].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-        setLatestPhoto(sortedPhotos[0].image);
+        setProgressPhotos(sortedPhotos);
+        if (sortedPhotos.length > 0) {
+          setLatestPhoto(sortedPhotos[0].image);
+        }
       }
 
       if (productsRes.data?.data) {
@@ -431,13 +435,28 @@ const DashboardPage: React.FC = () => {
         
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="text-left space-y-4 max-w-xl">
-            <div className="space-y-1">
-              <h1 className="text-3xl md:text-4xl font-black tracking-tight text-gray-800">
-                {getGreeting()}, {user?.name?.split(' ')[0]} 👋
-              </h1>
-              <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">
-                ✨ {dailyTip.title} Tip of the day
-              </p>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              {user?.profilePhoto || user?.profilePicture ? (
+                <img
+                  src={(user.profilePhoto || user.profilePicture).startsWith('http')
+                    ? (user.profilePhoto || user.profilePicture)
+                    : `http://localhost:5000${user.profilePhoto || user.profilePicture}`}
+                  alt="Profile"
+                  className="w-16 h-16 rounded-full object-cover border-4 border-white/60 shadow-md flex-shrink-0"
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-pink-50/50 flex items-center justify-center text-2xl border-4 border-white/60 shadow-md font-black flex-shrink-0">
+                  {user?.name?.charAt(0) || '👤'}
+                </div>
+              )}
+              <div className="space-y-1">
+                <h1 className="text-3xl md:text-4xl font-black tracking-tight text-gray-800">
+                  {getGreeting()}, {user?.name?.split(' ')[0]} 👋
+                </h1>
+                <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">
+                  ✨ {dailyTip.title} Tip of the day
+                </p>
+              </div>
             </div>
             
             <p className="text-sm text-gray-500 leading-relaxed italic">
@@ -678,6 +697,41 @@ const DashboardPage: React.FC = () => {
         )}
 
       </div>
+
+      {/* 3.5 SKIN PROGRESS PHOTOS PERSISTENCE GRID */}
+      {progressPhotos.length > 0 && (
+        <div className="glass-card p-7 border border-white/40 shadow-sm text-left space-y-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="font-bold text-base flex items-center gap-2 text-gray-800">
+                <Camera size={18} className="text-primary" /> Your Skin Progress Photos
+              </h3>
+              <p className="text-xs text-gray-400 mt-0.5">Your daily baseline tracking selfies, safely stored in MongoDB.</p>
+            </div>
+            <Link to="/gallery" className="px-4 py-2 rounded-full text-[10px] font-black uppercase bg-pink-50 text-primary border border-pink-100/50 hover:bg-pink-100 transition-all no-underline">
+              Compare Gallery
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4">
+            {progressPhotos.slice(0, 6).map((photo) => (
+              <div key={photo._id} className="relative group overflow-hidden rounded-2xl border border-pink-100/30 bg-white/40 shadow-sm p-1.5 flex flex-col space-y-1.5 hover:scale-102 transition-transform">
+                <img
+                  src={photo.image.startsWith('http') ? photo.image : `http://localhost:5000${photo.image}`}
+                  alt="Skin Progress"
+                  className="w-full aspect-square object-cover rounded-xl"
+                  loading="lazy"
+                />
+                <div className="px-1 text-center">
+                  <span className="text-[9px] font-bold text-gray-400">
+                    {new Date(photo.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* 4. TODAY'S ROUTINE CHECKLIST */}
       <div id="today-routine-section" className="glass-card p-7 border border-white/40 shadow-sm scroll-mt-24">

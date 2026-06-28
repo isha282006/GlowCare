@@ -4,6 +4,8 @@ export interface User {
   email: string;
   role: 'user' | 'admin';
   profilePicture: string;
+  profilePhoto?: string;
+  progressPhotos?: string[];
   createdAt: string;
   skinReport?: any;
   onboardingCompleted?: boolean;

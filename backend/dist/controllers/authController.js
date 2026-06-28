@@ -27,6 +27,8 @@ const register = async (req, res) => {
                 email: user.email,
                 role: user.role,
                 profilePicture: user.profilePicture,
+                profilePhoto: user.profilePhoto,
+                progressPhotos: user.progressPhotos,
             },
         });
     }
@@ -64,6 +66,8 @@ const login = async (req, res) => {
                 email: user.email,
                 role: user.role,
                 profilePicture: user.profilePicture,
+                profilePhoto: user.profilePhoto,
+                progressPhotos: user.progressPhotos,
                 onboardingCompleted: user.onboardingCompleted,
             },
         });
@@ -86,6 +90,8 @@ const getMe = async (req, res) => {
                 email: user.email,
                 role: user.role,
                 profilePicture: user.profilePicture,
+                profilePhoto: user.profilePhoto,
+                progressPhotos: user.progressPhotos,
                 createdAt: user.createdAt,
                 skinReport: user.skinReport,
                 onboardingCompleted: user.onboardingCompleted,
@@ -124,6 +130,8 @@ const updateProfile = async (req, res) => {
                 email: user.email,
                 role: user.role,
                 profilePicture: user.profilePicture,
+                profilePhoto: user.profilePhoto,
+                progressPhotos: user.progressPhotos,
                 skinReport: user.skinReport,
                 onboardingCompleted: user.onboardingCompleted,
             },
