@@ -34,7 +34,21 @@ const formatUserResponse = (req: any, user: any) => {
     profilePicture: getAbsoluteUrl(req, user.profilePicture),
     progressPhotos: (user.progressPhotos || []).map((p: string) => getAbsoluteUrl(req, p)),
     onboardingCompleted: user.onboardingCompleted,
-    skinReport: formattedReport
+    skinReport: formattedReport,
+    
+    // Additional fields
+    age: user.age,
+    gender: user.gender,
+    skinType: user.skinType,
+    skinConcerns: user.skinConcerns,
+    skinScore: user.skinScore,
+    skinTone: user.skinTone,
+    currentStreak: user.currentStreak,
+    longestStreak: user.longestStreak,
+    lastCompletedDate: user.lastCompletedDate,
+    completedDays: user.completedDays,
+    waterGoal: user.waterGoal,
+    currentWaterIntake: user.currentWaterIntake
   };
 };
 

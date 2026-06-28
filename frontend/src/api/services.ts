@@ -8,7 +8,7 @@ export const authService = {
   login: (data: { email: string; password: string }) =>
     api.post('/auth/login', data),
   getMe: () => api.get('/auth/me'),
-  updateProfile: (data: { name?: string; email?: string; skinReport?: any; onboardingCompleted?: boolean }) =>
+  updateProfile: (data: Record<string, any>) =>
     api.put('/auth/profile', data),
   changePassword: (data: { currentPassword: string; newPassword: string }) =>
     api.put('/auth/change-password', data),

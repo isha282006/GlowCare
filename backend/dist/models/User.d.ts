@@ -13,6 +13,18 @@ export interface IUser extends Document {
     skinReport?: any;
     onboardingCompleted: boolean;
     hasInteractedWithInventory: boolean;
+    age?: number;
+    gender?: string;
+    skinType?: string;
+    skinConcerns?: string[];
+    skinScore?: number;
+    skinTone?: string;
+    currentStreak: number;
+    longestStreak: number;
+    lastCompletedDate?: Date;
+    completedDays: Date[];
+    waterGoal: number;
+    currentWaterIntake: number;
     comparePassword(candidatePassword: string): Promise<boolean>;
     getSignedJwtToken(): string;
 }

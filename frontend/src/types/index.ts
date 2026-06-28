@@ -9,6 +9,24 @@ export interface User {
   createdAt: string;
   skinReport?: any;
   onboardingCompleted?: boolean;
+
+  // Profile
+  age?: number;
+  gender?: string;
+  skinType?: string;
+  skinConcerns?: string[];
+  skinScore?: number;
+  skinTone?: string;
+
+  // Streak
+  currentStreak?: number;
+  longestStreak?: number;
+  lastCompletedDate?: string;
+  completedDays?: string[];
+
+  // Water Tracker
+  waterGoal?: number;
+  currentWaterIntake?: number;
 }
 
 export interface AuthResponse {

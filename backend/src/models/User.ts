@@ -16,6 +16,25 @@ export interface IUser extends Document {
   skinReport?: any;
   onboardingCompleted: boolean;
   hasInteractedWithInventory: boolean;
+  
+  // Profile Additional Fields
+  age?: number;
+  gender?: string;
+  skinType?: string;
+  skinConcerns?: string[];
+  skinScore?: number;
+  skinTone?: string;
+  
+  // Streak System Fields
+  currentStreak: number;
+  longestStreak: number;
+  lastCompletedDate?: Date;
+  completedDays: Date[];
+  
+  // Dashboard Settings
+  waterGoal: number;
+  currentWaterIntake: number;
+
   comparePassword(candidatePassword: string): Promise<boolean>;
   getSignedJwtToken(): string;
 }
@@ -71,6 +90,61 @@ const UserSchema = new Schema<IUser>({
     type: Boolean,
     default: false,
   },
+  
+  // Profile Fields
+  age: {
+    type: Number,
+    default: 25,
+  },
+  gender: {
+    type: String,
+    default: 'Unspecified',
+  },
+  skinType: {
+    type: String,
+    default: 'Normal',
+  },
+  skinConcerns: {
+    type: [String],
+    default: [],
+  },
+  skinScore: {
+    type: Number,
+    default: 80,
+  },
+  skinTone: {
+    type: String,
+    default: 'Light',
+  },
+
+  // Streak Fields
+  currentStreak: {
+    type: Number,
+    default: 0,
+  },
+  longestStreak: {
+    type: Number,
+    default: 0,
+  },
+  lastCompletedDate: {
+    type: Date,
+    default: null,
+  },
+  completedDays: {
+    type: [Date],
+    default: [],
+  },
+
+  // Water Tracker
+  waterGoal: {
+    type: Number,
+    default: 2.5,
+  },
+  currentWaterIntake: {
+    type: Number,
+    default: 0,
+  },
+
   createdAt: {
     type: Date,
     default: Date.now,

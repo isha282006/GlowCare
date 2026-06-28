@@ -83,7 +83,7 @@ exports.getMe = getMe;
 // @route   PUT /api/auth/profile
 const updateProfile = async (req, res) => {
     try {
-        const { name, email, skinReport, onboardingCompleted } = req.body;
+        const { name, email, skinReport, onboardingCompleted, age, gender, skinType, skinConcerns, skinScore, skinTone, currentStreak, longestStreak, lastCompletedDate, completedDays, waterGoal, currentWaterIntake } = req.body;
         const user = await User_1.default.findById(req.user._id);
         if (!user) {
             res.status(404).json({ success: false, message: 'User not found' });
@@ -97,6 +97,31 @@ const updateProfile = async (req, res) => {
             user.skinReport = skinReport;
         if (onboardingCompleted !== undefined)
             user.onboardingCompleted = onboardingCompleted;
+        // Additional fields
+        if (age !== undefined)
+            user.age = age;
+        if (gender !== undefined)
+            user.gender = gender;
+        if (skinType !== undefined)
+            user.skinType = skinType;
+        if (skinConcerns !== undefined)
+            user.skinConcerns = skinConcerns;
+        if (skinScore !== undefined)
+            user.skinScore = skinScore;
+        if (skinTone !== undefined)
+            user.skinTone = skinTone;
+        if (currentStreak !== undefined)
+            user.currentStreak = currentStreak;
+        if (longestStreak !== undefined)
+            user.longestStreak = longestStreak;
+        if (lastCompletedDate !== undefined)
+            user.lastCompletedDate = lastCompletedDate;
+        if (completedDays !== undefined)
+            user.completedDays = completedDays;
+        if (waterGoal !== undefined)
+            user.waterGoal = waterGoal;
+        if (currentWaterIntake !== undefined)
+            user.currentWaterIntake = currentWaterIntake;
         await user.save();
         res.status(200).json({
             success: true,

@@ -11,6 +11,18 @@ declare const formatUserResponse: (req: any, user: any) => {
     progressPhotos: any;
     onboardingCompleted: any;
     skinReport: any;
+    age: any;
+    gender: any;
+    skinType: any;
+    skinConcerns: any;
+    skinScore: any;
+    skinTone: any;
+    currentStreak: any;
+    longestStreak: any;
+    lastCompletedDate: any;
+    completedDays: any;
+    waterGoal: any;
+    currentWaterIntake: any;
 } | null;
 export declare const uploadOrUpdateProfilePhoto: (req: AuthRequest, res: Response) => Promise<void>;
 export declare const removeProfilePhoto: (req: AuthRequest, res: Response) => Promise<void>;
