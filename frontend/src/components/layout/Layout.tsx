@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import AvatarManager from '../AvatarManager';
 
 const navItems = [
   { path: '/dashboard', label: 'Dashboard', icon: Home },
@@ -169,9 +170,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
           {/* User profile capsule */}
           <div className="mt-4 pt-3 flex items-center gap-3 border-t border-pink-100/50">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-primary to-secondary flex items-center justify-center font-bold text-white text-xs border border-white shadow-sm uppercase">
-              {user?.name?.slice(0, 2) || 'GC'}
-            </div>
+            <AvatarManager size="sm" editable={false} />
             <div className="text-left min-w-0 flex-1">
               <p className="text-xs font-black text-gray-800 truncate leading-tight">{user?.name || 'Skincare Lover'}</p>
               <p className="text-[9px] text-gray-400 truncate">{user?.email || 'user@glowcare.com'}</p>

@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useForm } from 'react-hook-form';
-import { User, Lock, Upload } from 'lucide-react';
+import { User, Lock } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
-import { authService, uploadService } from '../api/services';
+import { authService } from '../api/services';
+import AvatarManager from '../components/AvatarManager';
 
 interface ProfileFormData {
   name: string;
@@ -20,11 +21,6 @@ const ProfilePage: React.FC = () => {
   const { user, updateUser } = useAuth();
   const { showToast } = useToast();
 
-  const profilePicUrl = user?.profilePhoto || user?.profilePicture;
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(
-    profilePicUrl ? (profilePicUrl.startsWith('http') ? profilePicUrl : `http://localhost:5000${profilePicUrl}`) : null
-  );
-
   const { register: regProfile, handleSubmit: handleProfileSubmit, formState: { isSubmitting: isSubmittingProfile } } = useForm<ProfileFormData>({
     defaultValues: {
       name: user?.name || '',
@@ -40,27 +36,7 @@ const ProfilePage: React.FC = () => {
     }
   });
 
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setAvatarPreview(URL.createObjectURL(file));
-      uploadAvatar(file);
-    }
-  };
 
-  const uploadAvatar = async (file: File) => {
-    try {
-      const formData = new FormData();
-      formData.append('image', file);
-      const res = await uploadService.uploadProfilePhoto(formData);
-      updateUser(res.data.user);
-      const newPic = res.data.imageUrl;
-      setAvatarPreview(newPic.startsWith('http') ? newPic : `http://localhost:5000${newPic}`);
-      showToast('Profile picture updated successfully! 📸', 'success');
-    } catch {
-      showToast('Failed to upload profile picture', 'error');
-    }
-  };
 
   const onProfileSubmit = async (data: ProfileFormData) => {
     try {
@@ -96,26 +72,31 @@ const ProfilePage: React.FC = () => {
         
         {/* Profile Avatar Widget */}
         <div className="md:col-span-1">
-          <div className="glass-card p-6.5 flex flex-col items-center text-center border border-white/40 shadow-sm">
-            <div className="relative mb-5 group">
-              {avatarPreview ? (
-                <img src={avatarPreview} alt="Avatar" className="w-32 h-32 rounded-full object-cover border-4 border-pink-100 shadow-md transition-all group-hover:scale-102" />
-              ) : (
-                <div className="w-32 h-32 rounded-full bg-pink-50/50 flex items-center justify-center text-4xl border-4 border-pink-100 shadow-md font-black">
-                  {user?.name?.charAt(0) || '👤'}
-                </div>
+          <div className="glass-card p-6.5 flex flex-col items-center text-center border border-white/40 shadow-sm space-y-4">
+            <div>
+              <h3 className="font-bold text-xs uppercase tracking-wider text-gray-400 mb-3">Profile Photo</h3>
+              <AvatarManager size="xl" />
+            </div>
+
+            <div className="text-left w-full space-y-2 bg-pink-50/20 p-3.5 rounded-2xl border border-pink-100/10 text-[10px] font-semibold text-gray-500">
+              <span className="font-bold text-primary block uppercase tracking-wider text-[8px] mb-1">Image Metadata</span>
+              <p><span className="text-gray-400 font-bold uppercase tracking-wider text-[9px]">Status:</span> {user?.profilePhoto ? 'Uploaded & Synced' : 'Default Initials'}</p>
+              <p><span className="text-gray-400 font-bold uppercase tracking-wider text-[9px]">Storage:</span> MongoDB Permanent</p>
+              {user?.profilePhoto && (
+                <>
+                  <p><span className="text-gray-400 font-bold uppercase tracking-wider text-[9px]">Sync Date:</span> {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                  <p><span className="text-gray-400 font-bold uppercase tracking-wider text-[9px]">Format:</span> Web-Optimized JPG</p>
+                </>
               )}
-              <label className="absolute bottom-1 right-1 bg-white border border-pink-200/50 p-2.5 rounded-full cursor-pointer shadow-lg hover:scale-105 transition-transform flex items-center justify-center">
-                <Upload size={14} className="text-primary" />
-                <input type="file" accept="image/*" onChange={handleAvatarChange} className="hidden" />
-              </label>
             </div>
             
-            <h3 className="font-extrabold text-sm text-gray-800 leading-tight">{user?.name}</h3>
-            <p className="text-xs text-gray-400 font-semibold mb-3 mt-1.5">{user?.email}</p>
-            <span className="badge badge-lavender uppercase tracking-widest text-[9px] font-black">
-              {user?.role} Role
-            </span>
+            <div className="pt-2">
+              <h3 className="font-extrabold text-sm text-gray-800 leading-tight">{user?.name}</h3>
+              <p className="text-xs text-gray-400 font-semibold mb-3 mt-1.5">{user?.email}</p>
+              <span className="badge badge-lavender uppercase tracking-widest text-[9px] font-black">
+                {user?.role} Role
+              </span>
+            </div>
           </div>
         </div>
 

@@ -29,6 +29,18 @@ export const uploadService = {
     api.post('/upload/progress-photo', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
 };
 
+// Profile Services
+export const profileService = {
+  uploadPhoto: (formData: FormData) =>
+    api.post('/profile/upload-photo', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  updatePhoto: (formData: FormData) =>
+    api.put('/profile/update-photo', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  removePhoto: () =>
+    api.delete('/profile/remove-photo'),
+  getMe: () =>
+    api.get('/profile/me'),
+};
+
 // Product Services
 export const productService = {
   getAll: (params?: Record<string, string>) =>

@@ -13,6 +13,7 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { analyticsService, routineService, photoService, productService, journalService, authService } from '../api/services';
+import AvatarManager from '../components/AvatarManager';
 import { LoadingSkeleton } from '../components/ui';
 import type { DashboardStats, WeeklyActivity, Routine, Product, JournalEntry, Photo } from '../types';
 import { generateRoutineSteps, productDatabase } from '../utils/recommendationEngine';
@@ -449,19 +450,7 @@ const DashboardPage: React.FC = () => {
           <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="text-left space-y-4 max-w-xl">
               <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                {user?.profilePhoto || user?.profilePicture ? (
-                  <img
-                    src={(user.profilePhoto || user.profilePicture).startsWith('http')
-                      ? (user.profilePhoto || user.profilePicture)
-                      : `http://localhost:5000${user.profilePhoto || user.profilePicture}`}
-                    alt="Profile"
-                    className="w-16 h-16 rounded-full object-cover border-4 border-white/60 shadow-md flex-shrink-0"
-                  />
-                ) : (
-                  <div className="w-16 h-16 rounded-full bg-pink-50/50 flex items-center justify-center text-2xl border-4 border-white/60 shadow-md font-black flex-shrink-0">
-                    {user?.name?.charAt(0) || '👤'}
-                  </div>
-                )}
+                <AvatarManager size="md" />
                 <div className="space-y-1">
                   <h1 className="text-3xl md:text-4xl font-black tracking-tight text-gray-800">
                     {getGreeting()}, {user?.name?.split(' ')[0]} 👋
